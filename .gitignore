@@ -1,0 +1,46 @@
+# Variables de entorno / credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos locales / outputs (no versionar datasets pesados o sensibles)
+data/raw/
+data/interim/
+*.csv
+*.parquet
+*.xlsx
+!data/samples/*.csv
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Snowflake / conexiones
+*.pk8
+*credentials*
