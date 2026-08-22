@@ -44,3 +44,6 @@ Thumbs.db
 # Snowflake / conexiones
 *.pk8
 *credentials*
+
+# PDFs de referencia (propuestas, entregas de otros equipos) - no versionar
+referencias/

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>SomnoScope — maqueta del tablero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Archivo+Expanded:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --ink-900: #12141c;
+    --ink-600: #565b6e;
+    --ink-400: #8b8fa3;
+    --surface-0: #f5f6fa;
+    --surface-1: #ffffff;
+    --surface-2: #eceefb;
+    --line: #e0e2ef;
+    --line-strong: #c7cadf;
+    --accent: #5b57d1;
+    --accent-ink: #ffffff;
+    --accent-soft: #eceafc;
+
+    --stage-w:   #2a78d6;
+    --stage-n1:  #eb6834;
+    --stage-n2:  #1baf7a;
+    --stage-n3:  #eda100;
+    --stage-rem: #e87ba4;
+
+    --seq-100: #cde2fb;
+    --seq-300: #6da7ec;
+    --seq-500: #256abf;
+    --seq-700: #0d366b;
+
+    --good: #0ca30c;
+    --warning: #b8790a;
+    --critical: #d03b3b;
+
+    --shadow: 0 1px 2px rgba(18,20,28,0.04), 0 8px 24px -12px rgba(18,20,28,0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ink-900: #f3f3f7;
+      --ink-600: #c2c4d6;
+      --ink-400: #8b8fa3;
+      --surface-0: #0d0e14;
+      --surface-1: #161821;
+      --surface-2: #1d2030;
+      --line: #2a2d3d;
+      --line-strong: #383c52;
+      --accent: #9b97f0;
+      --accent-ink: #14152a;
+      --accent-soft: #23244a;
+
+      --stage-w:   #3987e5;
+      --stage-n1:  #d95926;
+      --stage-n2:  #199e70;
+      --stage-n3:  #c98500;
+      --stage-rem: #d55181;
+
+      --seq-100: #17223a;
+      --seq-300: #234d86;
+      --seq-500: #3987e5;
+      --seq-700: #a8c9f6;
+
+      --good: #35c46a;
+      --warning: #e0a530;
+      --critical: #e66767;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 28px -12px rgba(0,0,0,0.55);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ink-900: #f3f3f7;
+    --ink-600: #c2c4d6;
+    --ink-400: #8b8fa3;
+    --surface-0: #0d0e14;
+    --surface-1: #161821;
+    --surface-2: #1d2030;
+    --line: #2a2d3d;
+    --line-strong: #383c52;
+    --accent: #9b97f0;
+    --accent-ink: #14152a;
+    --accent-soft: #23244a;
+
+    --stage-w:   #3987e5;
+    --stage-n1:  #d95926;
+    --stage-n2:  #199e70;
+    --stage-n3:  #c98500;
+    --stage-rem: #d55181;
+
+    --seq-100: #17223a;
+    --seq-300: #234d86;
+    --seq-500: #3987e5;
+    --seq-700: #a8c9f6;
+
+    --good: #35c46a;
+    --warning: #e0a530;
+    --critical: #e66767;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 28px -12px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface-0);
+    color: var(--ink-900);
+    font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  .app {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ---- top bar ---- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--stage-n2));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 15px;
+    font-family: "Archivo Expanded", "Archivo", sans-serif;
+    flex-shrink: 0;
+  }
+  .brand-name {
+    font-family: "Archivo Expanded", "Archivo", sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.01em;
+  }
+  .brand-tag {
+    color: var(--ink-400);
+    font-size: 12.5px;
+  }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .select {
+    appearance: none;
+    background: var(--surface-1);
+    border: 1px solid var(--line-strong);
+    color: var(--ink-900);
+    border-radius: 8px;
+    padding: 8px 32px 8px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-400) 50%), linear-gradient(135deg, var(--ink-400) 50%, transparent 50%);
+    background-position: calc(100% - 16px) 15px, calc(100% - 11px) 15px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 8px;
+    padding: 9px 15px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.05s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: transparent; border-color: var(--line-strong); color: var(--ink-900); }
+  .btn-ghost:hover { background: var(--surface-2); }
+
+  /* ---- banner ---- */
+  .banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--ink-600);
+  }
+  .banner b { color: var(--ink-900); }
+  .banner-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+  }
+
+  /* ---- panel base ---- */
+  .panel {
+    background: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+  }
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .panel-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .panel-sub {
+    font-size: 12px;
+    color: var(--ink-400);
+  }
+
+  /* ---- context / chips row ---- */
+  .context-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .context-card {
+    flex: 1 1 150px;
+    background: var(--surface-1);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+  }
+  .context-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-400);
+    margin-bottom: 6px;
+  }
+  .context-value {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 17px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .context-value.small { font-size: 13.5px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 4px 10px 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--line);
+  }
+  .chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .chip-good { color: var(--good); }
+  .chip-good .chip-dot { background: var(--good); }
+  .chip-warning { color: var(--warning); }
+  .chip-warning .chip-dot { background: var(--warning); }
+  .chip-neutral { color: var(--ink-600); }
+  .chip-neutral .chip-dot { background: var(--ink-400); }
+
+  /* ---- hypnogram ---- */
+  .hypno-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-600);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  .hypno-track-label {
+    font-size: 11px;
+    color: var(--ink-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    width: 74px;
+    flex-shrink: 0;
+  }
+  .hypno-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .hypno-strip {
+    flex: 1;
+    display: flex;
+    height: 30px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .seg {
+    height: 100%;
+    position: relative;
+    cursor: default;
+    border-right: 1px solid rgba(255,255,255,0.35);
+  }
+  .seg:last-child { border-right: none; }
+  .seg:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 7px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink-900);
+    color: var(--surface-0);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 5;
+    box-shadow: var(--shadow);
+  }
+  .hypno-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-400);
+    padding-left: 84px;
+    margin-top: 2px;
+  }
+
+  /* ---- grid of 3 lower panels ---- */
+  .lower-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1.1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .lower-grid { grid-template-columns: 1fr; }
+  }
+
+  /* confusion matrix */
+  .cm-wrap { overflow-x: auto; }
+  table.cm { border-collapse: collapse; width: 100%; font-size: 12px; }
+  table.cm th, table.cm td {
+    text-align: center;
+    padding: 7px 6px;
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  table.cm th {
+    color: var(--ink-400);
+    font-weight: 500;
+    font-size: 11px;
+  }
+  table.cm td.diag { font-weight: 700; }
+  table.cm .rowlabel {
+    font-family: "Archivo", sans-serif;
+    font-weight: 600;
+    font-size: 11.5px;
+    color: var(--ink-600);
+    text-align: right;
+    padding-right: 10px;
+  }
+
+  /* f1 bars */
+  .f1-list { display: flex; flex-direction: column; gap: 11px; }
+  .f1-row { display: flex; align-items: center; gap: 10px; }
+  .f1-label { width: 38px; font-size: 12.5px; font-weight: 600; flex-shrink: 0; }
+  .f1-track {
+    flex: 1;
+    background: var(--surface-2);
+    border-radius: 5px;
+    height: 12px;
+    overflow: hidden;
+  }
+  .f1-fill { height: 100%; border-radius: 5px 0 0 5px; }
+  .f1-value {
+    width: 40px;
+    text-align: right;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-600);
+    flex-shrink: 0;
+  }
+
+  /* runs table */
+  table.runs { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.runs th {
+    text-align: left;
+    color: var(--ink-400);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0 8px 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  table.runs td {
+    padding: 9px 8px 9px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  table.runs td:first-child, table.runs th:first-child { font-family: "Archivo", sans-serif; }
+  table.runs tr:last-child td { border-bottom: none; }
+  table.runs tr.best td { color: var(--ink-900); font-weight: 600; }
+  .best-badge {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--good);
+    background: color-mix(in srgb, var(--good) 14%, transparent);
+    padding: 2px 6px;
+    border-radius: 5px;
+    vertical-align: middle;
+    font-family: "Archivo", sans-serif;
+  }
+
+  footer.note {
+    text-align: center;
+    color: var(--ink-400);
+    font-size: 12px;
+    padding-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div>
+        <div class="brand-name">SomnoScope</div>
+        <div class="brand-tag">clasificación de estadios de sueño · EEG Fpz-Cz · baseline Random Forest</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <select class="select" aria-label="Seleccionar sujeto">
+        <option>Sujeto SC4001 · Noche 1</option>
+        <option>Sujeto SC4012 · Noche 2</option>
+        <option>Sujeto SC4030 · Noche 1</option>
+      </select>
+      <button class="btn btn-ghost">Exportar reporte</button>
+      <button class="btn btn-primary">Cargar registro EDF</button>
+    </div>
+  </div>
+
+  <div class="banner">
+    <span class="banner-dot"></span>
+    <span><b>Maqueta del prototipo</b> — datos de ejemplo para ilustrar el diseño; sin conexión real a la API del modelo.</span>
+  </div>
+
+  <div class="context-row">
+    <div class="context-card">
+      <div class="context-label">Duración del registro</div>
+      <div class="context-value">7 h 52 min</div>
+    </div>
+    <div class="context-card">
+      <div class="context-label">Épocas totales</div>
+      <div class="context-value">944</div>
+    </div>
+    <div class="context-card">
+      <div class="context-label">Canal de entrada</div>
+      <span class="chip chip-good"><span class="chip-dot"></span>EEG Fpz-Cz verificado</span>
+    </div>
+    <div class="context-card">
+      <div class="context-label">Calidad de datos</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="chip chip-warning"><span class="chip-dot"></span>12 épocas "M" excluidas</span>
+        <span class="chip chip-neutral"><span class="chip-dot"></span>3 épocas "?" excluidas</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Hipnograma de la noche</div>
+        <div class="panel-sub">Predicción del modelo vs. anotación experta (cuando está disponible)</div>
+      </div>
+      <div class="hypno-legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--stage-w)"></span>W</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--stage-n1)"></span>N1</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--stage-n2)"></span>N2</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--stage-n3)"></span>N3</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--stage-rem)"></span>REM</span>
+      </div>
+    </div>
+
+    <div class="hypno-row">
+      <span class="hypno-track-label">Predicho</span>
+      <div class="hypno-strip" id="strip-pred"></div>
+    </div>
+    <div class="hypno-row">
+      <span class="hypno-track-label">Real (experto)</span>
+      <div class="hypno-strip" id="strip-real"></div>
+    </div>
+    <div class="hypno-axis"><span>22:14</span><span>00:00</span><span>02:00</span><span>04:00</span><span>06:06</span></div>
+  </div>
+
+  <div class="lower-grid">
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Matriz de confusión</div>
+          <div class="panel-sub">Fila = real, columna = predicho</div>
+        </div>
+      </div>
+      <div class="cm-wrap">
+        <table class="cm">
+          <tr><th></th><th>W</th><th>N1</th><th>N2</th><th>N3</th><th>REM</th></tr>
+          <tr><td class="rowlabel">W</td><td class="diag" style="background:var(--seq-500);color:#fff">86</td><td style="background:var(--seq-100)">4</td><td style="background:var(--surface-2)">1</td><td style="background:var(--surface-2)">0</td><td style="background:var(--seq-100)">2</td></tr>
+          <tr><td class="rowlabel">N1</td><td style="background:var(--seq-100)">9</td><td class="diag" style="background:var(--seq-300);color:#fff">41</td><td style="background:var(--seq-100)">12</td><td style="background:var(--surface-2)">0</td><td style="background:var(--seq-100)">6</td></tr>
+          <tr><td class="rowlabel">N2</td><td style="background:var(--surface-2)">2</td><td style="background:var(--seq-100)">10</td><td class="diag" style="background:var(--seq-700);color:#fff">312</td><td style="background:var(--seq-100)">22</td><td style="background:var(--surface-2)">3</td></tr>
+          <tr><td class="rowlabel">N3</td><td style="background:var(--surface-2)">0</td><td style="background:var(--surface-2)">1</td><td style="background:var(--seq-100)">15</td><td class="diag" style="background:var(--seq-500);color:#fff">98</td><td style="background:var(--surface-2)">0</td></tr>
+          <tr><td class="rowlabel">REM</td><td style="background:var(--seq-100)">3</td><td style="background:var(--seq-100)">8</td><td style="background:var(--surface-2)">2</td><td style="background:var(--surface-2)">0</td><td class="diag" style="background:var(--seq-300);color:#fff">147</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">F1-score por clase</div>
+          <div class="panel-sub">Macro F1: 0.79</div>
+        </div>
+      </div>
+      <div class="f1-list">
+        <div class="f1-row"><span class="f1-label">W</span><div class="f1-track"><div class="f1-fill" style="width:92%; background:var(--stage-w)"></div></div><span class="f1-value">0.92</span></div>
+        <div class="f1-row"><span class="f1-label">N1</span><div class="f1-track"><div class="f1-fill" style="width:58%; background:var(--stage-n1)"></div></div><span class="f1-value">0.58</span></div>
+        <div class="f1-row"><span class="f1-label">N2</span><div class="f1-track"><div class="f1-fill" style="width:88%; background:var(--stage-n2)"></div></div><span class="f1-value">0.88</span></div>
+        <div class="f1-row"><span class="f1-label">N3</span><div class="f1-track"><div class="f1-fill" style="width:85%; background:var(--stage-n3)"></div></div><span class="f1-value">0.85</span></div>
+        <div class="f1-row"><span class="f1-label">REM</span><div class="f1-track"><div class="f1-fill" style="width:90%; background:var(--stage-rem)"></div></div><span class="f1-value">0.90</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Corridas registradas (MLflow)</div>
+          <div class="panel-sub">Comparación de experimentos</div>
+        </div>
+      </div>
+      <table class="runs">
+        <tr><th>Corrida</th><th>Modelo</th><th>Acc.</th><th>F1-macro</th></tr>
+        <tr><td>rf_baseline_v1</td><td>RF, 8 feat.</td><td>0.81</td><td>0.74</td></tr>
+        <tr class="best"><td>rf_v2_tuned<span class="best-badge">MEJOR</span></td><td>RF, 8 feat.</td><td>0.86</td><td>0.79</td></tr>
+        <tr><td>rf_v1_5class</td><td>RF, 5 feat.</td><td>0.77</td><td>0.68</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <footer class="note">SomnoScope · maqueta v0.1 — línea base hacia la plataforma flexible multicanal del proyecto de grado</footer>
+</div>
+
+<script>
+  // Datos de ejemplo: secuencia de estadios por época (30s), solo para representar el hipnograma.
+  const stageColor = {W:'var(--stage-w)', N1:'var(--stage-n1)', N2:'var(--stage-n2)', N3:'var(--stage-n3)', REM:'var(--stage-rem)'};
+  const pred = ["W","W","W","N1","N1","N2","N2","N2","N2","N3","N3","N3","N3","N3","N2","N2","REM","REM","REM","N2","N2","N3","N3","N3","N2","REM","REM","N2","N2","N1","W"];
+  const real = ["W","W","N1","N1","N2","N2","N2","N2","N2","N3","N3","N3","N3","N2","N2","N2","REM","REM","N2","N2","N2","N3","N3","N3","N2","REM","REM","REM","N2","N1","W"];
+
+  function renderStrip(id, seq){
+    const el = document.getElementById(id);
+    const w = (100/seq.length).toFixed(4) + '%';
+    el.innerHTML = seq.map((s,i) => {
+      const start = 22 + Math.floor(i * (8*60/seq.length)); // ilustrativo
+      return `<div class="seg" style="width:${w}; background:${stageColor[s]}" data-tip="Época ${i+1} · ${s}"></div>`;
+    }).join('');
+  }
+  renderStrip('strip-pred', pred);
+  renderStrip('strip-real', real);
+</script>
+</body>
+</html>
