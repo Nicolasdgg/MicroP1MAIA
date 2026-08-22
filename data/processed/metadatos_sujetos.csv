@@ -1,0 +1,19 @@
+Subject_Code,Cohort,Sampling_Rate_Hz,Channels,Duration_Hours,Total_Epochs_30s,Sleep_Efficiency_%,TST_Hours,Sleep_Latency_Min,REM_Latency_Min,Count_W,Count_N1,Count_N2,Count_N3,Count_REM,Count_M,Count_Unknown
+SC4001E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",6.42,771,0.0,0.0,0.0,0.0,771,0,0,0,0,0,0
+SC4002E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.58,2830,33.36,7.87,434.5,500.5,1885,59,373,297,215,1,0
+SC4011E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.35,2802,33.76,7.88,359.0,478.5,1856,109,562,105,170,0,0
+SC4012E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.75,2850,35.93,8.53,321.5,420.0,1824,92,660,96,176,0,2
+SC4021E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.37,2804,31.99,7.48,364.5,444.0,1907,94,545,95,163,0,0
+SC4022E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",22.97,2756,32.08,7.37,378.5,509.5,1871,184,402,119,179,1,0
+SC4031E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.5,2820,28.79,6.77,435.5,541.0,2008,61,485,57,209,0,0
+SC4032E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",22.77,2732,28.37,6.46,460.5,515.5,1957,45,400,131,199,0,0
+SC4041E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",21.42,2570,40.27,8.62,406.0,478.0,1534,166,620,53,196,1,0
+SC4042E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.27,2792,36.35,8.46,537.0,642.0,1773,137,514,94,270,4,0
+SC4051E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",22.68,2722,17.05,3.87,644.5,726.5,2258,44,217,135,68,0,0
+SC4052E0,Cassette,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, Resp oro-nasal, EMG submental, Temp rectal, Event marker",23.38,2806,36.49,8.53,540.5,600.5,1780,114,616,114,180,2,0
+ST7011J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",9.1,1092,81.32,7.4,26.0,79.0,204,101,529,136,122,0,0
+ST7012J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",8.67,1040,90.1,7.81,11.0,98.5,103,62,586,109,180,0,0
+ST7021J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",7.67,920,92.5,7.09,10.5,183.0,69,44,412,219,176,0,0
+ST7022J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",7.87,944,92.16,7.25,10.5,99.0,74,74,353,284,159,0,0
+ST7041J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",8.4,1008,94.44,7.93,0.0,77.0,55,66,536,132,218,1,0
+ST7042J0,Telemetry,100.0,"EEG Fpz-Cz, EEG Pz-Oz, EOG horizontal, EMG submental, Marker",9.43,1131,90.19,8.5,0.0,173.0,110,60,622,122,216,1,0
