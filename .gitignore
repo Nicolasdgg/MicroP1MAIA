@@ -1,1 +1,104 @@
 /data
+
+# Variables de entorno / credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos locales / outputs
+data/raw/
+data/interim/
+*.csv
+*.parquet
+*.xlsx
+!data/samples/*.csv
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Snowflake / conexiones
+*.pk8
+*credentials*
+
+# PDFs de referencia
+referencias/
+<<<<<<< HEAD
+/data
+=======
+# Variables de entorno / credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos locales / outputs (no versionar datasets pesados o sensibles)
+data/raw/
+data/interim/
+*.csv
+*.parquet
+*.xlsx
+!data/samples/*.csv
+
+# Logs
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Snowflake / conexiones
+*.pk8
+*credentials*
+
+# PDFs de referencia (propuestas, entregas de otros equipos) - no versionar
+referencias/
+>>>>>>> f45ad00a0bd7d9699a0c2287ed606cf4dd388be8
