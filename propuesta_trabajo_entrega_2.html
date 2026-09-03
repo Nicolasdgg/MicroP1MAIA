@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta de Trabajo Colaborativo - Entrega 2 | Microproyecto MAIA</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #475569;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #059669;
+            --warning: #d97706;
+            --badge-bg: #eff6ff;
+            --badge-text: #1d4ed8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #1e3a8a 100%);
+            color: #ffffff;
+            padding: 36px 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 15px;
+            color: #cbd5e1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 36px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Tabla de Roles */
+        .table-responsive {
+            overflow-x: auto;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 20px;
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+        }
+
+        /* Cards de Integrantes */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-header {
+            margin-bottom: 16px;
+        }
+
+        .card-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .card-header .role {
+            font-size: 13px;
+            color: var(--primary-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .objective {
+            background-color: #f8fafc;
+            border-left: 3px solid var(--primary-light);
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--secondary);
+            margin-bottom: 14px;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .task-list {
+            list-style: none;
+            font-size: 13.5px;
+            color: var(--text-main);
+        }
+
+        .task-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .task-list li::before {
+            content: "•";
+            color: var(--primary-light);
+            font-weight: bold;
+            font-size: 18px;
+            position: absolute;
+            left: 4px;
+            top: -2px;
+        }
+
+        /* Callouts / Avisos */
+        .alert-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 4px solid var(--warning);
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #92400e;
+            margin: 20px 0;
+        }
+
+        /* Distribución de Páginas */
+        .page-budget {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .page-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .page-number {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .page-desc {
+            font-size: 12.5px;
+            color: var(--secondary);
+        }
+
+        .page-resp {
+            font-size: 11.5px;
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        /* Cronograma */
+        .timeline {
+            border-left: 3px solid var(--primary-light);
+            padding-left: 20px;
+            margin: 20px 0 20px 10px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .timeline-item::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            left: -28px;
+            top: 4px;
+        }
+
+        .timeline-date {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        .timeline-content {
+            font-size: 13.5px;
+            color: var(--secondary);
+            margin-top: 4px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 48px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Plan de Trabajo Colaborativo - Entrega 2</h1>
+        <p>Microproyecto MAIA | Desarrollo de Soluciones de Inteligencia Artificial (Semana 4 - 5)</p>
+    </header>
+
+    <div class="alert-box">
+        <strong>⚠️ Regla Crítica de la Rúbrica:</strong> Aunque el trabajo es en grupo, la calificación es individual. Cada miembro debe evidenciar commits propios en el repositorio Git y estar asignado a tareas claras tanto en el código como en el reporte escrito (máximo estricto de 10 páginas).
+    </div>
+
+    <!-- SECCIÓN 1: TABLA GENERAL -->
+    <h2 class="section-title">1. Matriz de Roles y Responsabilidades</h2>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Miembro</th>
+                    <th>Rol Principal</th>
+                    <th>Entregable Técnico en Git</th>
+                    <th>Sección del Reporte</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Integrante 1</strong></td>
+                    <td><span class="badge">MLOps & Cloud</span></td>
+                    <td>Servidor MLflow en AWS EC2 y módulo <code>src/utils/mlflow_logger.py</code>.</td>
+                    <td>Soporte de MLflow (pantallazos con usuario e IP visible de EC2).</td>
+                </tr>
+                <tr>
+                    <td><strong>Integrante 2</strong></td>
+                    <td><span class="badge">Modelado Clásico</span></td>
+                    <td>Pipeline de extracción de características espectrales (Welch PSD) y modelos LightGBM / Random Forest.</td>
+                    <td>Sección de Modelos Clásicos, métricas (F1 Macro, Kappa) y conclusiones.</td>
+                </tr>
+                <tr>
+                    <td><strong>Integrante 3</strong></td>
+                    <td><span class="badge">Deep Learning</span></td>
+                    <td>Red neuronal 1D-CNN + BiLSTM (TinySleepNet) y experimentos de mitigación de desbalance (N1).</td>
+                    <td>Sección de Deep Learning, comparación vs clásico y trade-offs.</td>
+                </tr>
+                <tr>
+                    <td><strong>Integrante 4</strong></td>
+                    <td><span class="badge">Dashboard & Frontend</span></td>
+                    <td>Aplicación web funcional en Streamlit conectada a inferencia de modelos e hipnograma interactivo.</td>
+                    <td>Descripción funcional y capturas del tablero desarrollado.</td>
+                </tr>
+                <tr>
+                    <td><strong>Integrante 5</strong></td>
+                    <td><span class="badge">Pipeline & Integración</span></td>
+                    <td>Módulo común de datos (partición estricta por sujeto <code>GroupKFold</code>), empaquetado del modelo y edición del reporte.</td>
+                    <td>Resumen del problema (máx 1 pág), Reporte de Trabajo en Equipo (1 pág) y consolidación.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN 2: CARDS DETALLADAS -->
+    <h2 class="section-title">2. Asignación Autónoma de Tareas</h2>
+    <div class="grid-cards">
+
+        <!-- Integrante 1 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="role">Infraestructura & MLOps</span>
+                <h3>Integrante 1</h3>
+            </div>
+            <div class="objective">
+                <strong>Objetivo:</strong> Tener listo el tracking server de MLflow en AWS EC2 para que el equipo registre experimentos sin bloqueos.
+            </div>
+            <ul class="task-list">
+                <li>Desplegar una instancia AWS EC2 (Ubuntu) con puertos seguros para MLflow.</li>
+                <li>Configurar el servidor de seguimiento MLflow con persistencia.</li>
+                <li>Publicar el script <code>mlflow_logger.py</code> con la URL pública/IP para registrar métricas y artefactos.</li>
+                <li><strong>Evidencia:</strong> Tomar pantallazos donde se vea claramente el usuario, la IP pública de EC2 y la IP en la URL de MLflow.</li>
+                <li>Detener la máquina EC2 (<em>stop</em>) al finalizar los experimentos para la entrega.</li>
+            </ul>
+        </div>
+
+        <!-- Integrante 2 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="role">Modelos Tradicionales</span>
+                <h3>Integrante 2</h3>
+            </div>
+            <div class="objective">
+                <strong>Objetivo:</strong> Extraer características clínicas y entrenar modelos basados en árboles y ensambles.
+            </div>
+            <ul class="task-list">
+                <li>Desarrollar script de extracción de características por época de 30s: potencias relativas en bandas Delta, Theta, Alpha, Sigma y Beta (Welch PSD).</li>
+                <li>Entrenar y afinar hiperparámetros de <strong>Random Forest</strong> y <strong>LightGBM</strong>.</li>
+                <li>Registrar corridas en el MLflow de EC2 (Accuracy, F1 Macro, Kappa, Matrices de Confusión).</li>
+                <li>Redactar análisis de rendimiento y matriz de confusión para el reporte.</li>
+            </ul>
+        </div>
+
+        <!-- Integrante 3 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="role">Deep Learning</span>
+                <h3>Integrante 3</h3>
+            </div>
+            <div class="objective">
+                <strong>Objetivo:</strong> Implementar red neuronal profunda y evaluar el impacto del desbalance severo de clases.
+            </div>
+            <ul class="task-list">
+                <li>Construir arquitectura de aprendizaje profundo (1D-CNN + BiLSTM tipo TinySleepNet sobre la señal preprocesada).</li>
+                <li>Experimentar con funciones de costo para clases desbalanceadas (<em>Focal Loss</em> o <em>Class Weights</em> para N1).</li>
+                <li>Registrar todos los modelos y métricas en el servidor MLflow de EC2.</li>
+                <li>Comparar rendimiento (F1 Macro vs latencia de inferencia) contra modelos clásicos para el informe.</li>
+            </ul>
+        </div>
+
+        <!-- Integrante 4 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="role">Desarrollo de Producto</span>
+                <h3>Integrante 4</h3>
+            </div>
+            <div class="objective">
+                <strong>Objetivo:</strong> Construir el tablero web interactivo funcional basado en la maqueta de la Entrega 1.
+            </div>
+            <ul class="task-list">
+                <li>Implementar la aplicación en <strong>Streamlit</strong> (carga de archivos <code>.edf</code> o muestras procesadas).</li>
+                <li>Visualizar el Hipnograma clínico interactivo con navegación temporal.</li>
+                <li>Calcular y mostrar KPIs clave: Eficiencia de sueño, TST, WASO y distribución por estadios.</li>
+                <li>Conectar el selector de modelos con la función de predicción estándar.</li>
+                <li>Redactar la descripción funcional del tablero y tomar las capturas del producto.</li>
+            </ul>
+        </div>
+
+        <!-- Integrante 5 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="role">Pipeline Base & Integración</span>
+                <h3>Integrante 5</h3>
+            </div>
+            <div class="objective">
+                <strong>Objetivo:</strong> Estandarizar la carga de datos compartida, empaquetar el modelo y consolidar el informe final.
+            </div>
+            <ul class="task-list">
+                <li>Publicar módulo común <code>loader.py</code> con partición estricta por sujeto (<code>GroupKFold</code>) para evitar <em>data leakage</em>.</li>
+                <li>Empaquetar el mejor modelo (exportación lista para ser consumida por el tablero de Integrante 4).</li>
+                <li>Redactar el <strong>Resumen del problema</strong> (máx. 1 pág: contexto, pregunta de negocio, alcance y datos).</li>
+                <li>Consolidar el <strong>Reporte de trabajo en equipo</strong> (1 pág) con tabla de commits, horas y aportes.</li>
+                <li>Controlar que el informe maestro cumpla estrictamente el <strong>límite de 10 páginas</strong>.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- SECCIÓN 3: CONTRATOS DE INTERFAZ -->
+    <h2 class="section-title">3. Estrategia de Trabajo Desacoplado (Sin Bloqueos)</h2>
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; font-size: 14px; margin-bottom: 24px;">
+        <ul style="padding-left: 20px; color: var(--secondary);">
+            <li style="margin-bottom: 8px;"><strong>Contrato de Datos:</strong> El Integrante 5 entrega una función única <code>get_train_test_data()</code>. Ningún otro integrante pierde tiempo en particiones o lectura de datos.</li>
+            <li style="margin-bottom: 8px;"><strong>Contrato de Tracking:</strong> El Integrante 1 publica la función <code>log_run(model, metrics, params)</code>. Los Integrantes 2 y 3 solo importan esa función en sus scripts.</li>
+            <li style="margin-bottom: 8px;"><strong>Contrato del Tablero:</strong> El Integrante 4 trabaja inicialmente con una función simulada <code>predict(signal)</code> para armar la interfaz sin esperar a que los modelos terminen de entrenar. Al final, solo se reemplaza por el modelo empaquetado.</li>
+        </ul>
+    </div>
+
+    <!-- SECCIÓN 4: PRESUPUESTO DEL REPORTE -->
+    <h2 class="section-title">4. Presupuesto Estricto del Reporte (Límite: 10 Páginas)</h2>
+    <div class="page-budget">
+        <div class="page-item">
+            <span class="page-number">Página 1</span>
+            <div class="page-desc">Resumen del problema, pregunta de negocio, alcance y cambios vs Entrega 1.</div>
+            <div class="page-resp">Resp: Integrante 5</div>
+        </div>
+        <div class="page-item">
+            <span class="page-number">Páginas 2 - 4</span>
+            <div class="page-desc">Modelos desarrollados: ingeniería de características, modelos clásicos y Deep Learning.</div>
+            <div class="page-resp">Resp: Integrantes 2 y 3</div>
+        </div>
+        <div class="page-item">
+            <span class="page-number">Página 5</span>
+            <div class="page-desc">Soporte MLflow: Tabla de corridas y capturas en AWS EC2 (IP y usuario visibles).</div>
+            <div class="page-resp">Resp: Integrante 1</div>
+        </div>
+        <div class="page-item">
+            <span class="page-number">Páginas 6 - 7</span>
+            <div class="page-desc">Evaluación, análisis de matrices de confusión y conclusiones sobre los modelos.</div>
+            <div class="page-resp">Resp: Integrantes 2 y 3</div>
+        </div>
+        <div class="page-item">
+            <span class="page-number">Páginas 8 - 9</span>
+            <div class="page-desc">Descripción y capturas funcionales del tablero interactivo (Streamlit).</div>
+            <div class="page-resp">Resp: Integrante 4</div>
+        </div>
+        <div class="page-item">
+            <span class="page-number">Página 10</span>
+            <div class="page-desc">Reporte de trabajo en equipo: tabla de roles, horas, aportes y enlaces a commits.</div>
+            <div class="page-resp">Resp: Integrante 5</div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 5: CRONOGRAMA -->
+    <h2 class="section-title">5. Cronograma Sugerido de Hitos</h2>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-date">Viernes 4 de Septiembre - Hito de Nivelación</div>
+            <div class="timeline-content">
+                Servidor MLflow arriba en EC2 con script de conexión compartido. Loader de datos publicado en <code>main</code>. Primeros prototipos de modelos y estructura base del tablero en ejecución.
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-date">Sábado 5 de Septiembre - Hito de Integración</div>
+            <div class="timeline-content">
+                Selección del mejor modelo y conexión final al Tablero. Experimentos registrados en MLflow y captura de pantallas en AWS EC2. Integración de ramas a <code>main</code> mediante Pull Requests.
+            </div>
+        </div>
+        <div class="timeline-item">
+            <div class="timeline-date">Domingo 6 de Septiembre - Cierre y Entrega</div>
+            <div class="timeline-content">
+                Consolidación final del reporte de 10 páginas (PDF/DOCX). Detención de la máquina EC2 (<em>stop instance</em>). Revisión cruzada de commits de todos los miembros en GitHub.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Maestría en Inteligencia Artificial (MAIA) - Universidad de los Andes | Microproyecto Entrega 2</p>
+    </footer>
+
+</div>
+
+</body>
+</html>
