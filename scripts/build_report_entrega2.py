@@ -297,24 +297,23 @@ def build_docx():
     )
 
     # -------------------------------------------------------------
-    # SECCIÓN 5: DESCRIPCIÓN DEL TABLERO DESARROLLADO (PÁG 8 - 9)
+    # SECCIÓN 5: DESCRIPCIÓN DE LA API, TABLERO Y DESPLIEGUE DOCKER (PÁG 8 - 9)
     # -------------------------------------------------------------
-    add_styled_heading(doc, "5. Prototipo Funcional del Tablero Interactivo (Streamlit)", level=1)
+    add_styled_heading(doc, "5. Prototipo Funcional: API REST, Tablero Clínico y Despliegue con Docker", level=1)
     
     add_body_paragraph(
         doc,
-        "Fiel a la maqueta interactiva aprobada en la Entrega 1 ('SomnoScope'), se construyó la aplicación interactiva funcional en Streamlit (ubicada en app/dashboard.py), integrando el modelo LightGBM empaquetado y permitiendo al especialista realizar una inspección visual y cuantitativa en tiempo real.",
-        bold_prefix="Arquitectura del Tablero Clínico: "
+        "Cumpliendo rigurosamente los lineamientos de la rúbrica, la solución se estructuró bajo una arquitectura desacoplada de microservicios contenerizada con Docker. La solución consta de tres componentes principales: modelos supervisados empaquetados, una API REST de inferencia de alto rendimiento y un tablero clínico interactivo que consume las predicciones a través de la API.",
+        bold_prefix="Arquitectura de la Solución y Desacoplamiento: "
     )
 
-    add_bullet_point(doc, "Permite seleccionar registros de polisomnografía (.edf de sleep-cassette y sleep-telemetry) y configurar dinámicamente el canal de derivación primario (EEG Fpz-Cz o EEG Pz-Oz).", bold_title="Panel de Configuración e Ingesta: ")
-    add_bullet_point(doc, "Calcula automáticamente el Tiempo Total en Cama (TIB), Tiempo Total de Sueño (TST), Eficiencia de Sueño (%), Latencia de Sueño (SOL) y Minutos de Vigilia Intra-Sueño (WASO), con semáforo de normalidad clínica.", bold_title="Tarjetas de KPIs de Arquitectura de Sueño: ")
-    add_bullet_point(doc, "Despliega el hipnograma completo de la noche ordenado en el eje vertical según el estándar clínico (W, REM, N1, N2, N3) con navegación y zoom temporal interactivo.", bold_title="Visualizador del Hipnograma Clínico Nocturno: ")
-    add_bullet_point(doc, "Permite seleccionar mediante un control deslizante cualquier época de 30 segundos, visualizando la señal bioeléctrica continua (3,000 puntos) y la gráfica de barras de probabilidades de certeza de predicción por estadio.", bold_title="Inspector Detallado de Época (30s): ")
+    add_bullet_point(doc, "Construida en 'app/api.py' con FastAPI. Expone endpoints estandarizados: 'GET /health' (estado del servicio y modelo activo), 'POST /predict/features' (inferencia a partir del vector de 25 características espectrales), 'POST /predict/epoch' (procesamiento e inferencia de épocas de 30s) y 'POST /predict/recording' (ingesta de archivos .edf completos con cálculo de KPIs).", bold_title="API REST de Inferencia (FastAPI): ")
+    add_bullet_point(doc, "Implementado en 'app/dashboard.py' bajo el diseño SomnoScope. Permite seleccionar registros polisomnográficos o cargar nuevos archivos .edf, conectándose vía HTTP POST a la API REST de inferencia para renderizar el hipnograma de doble franja (predicho vs. real), selector de modo claro/oscuro, visualizador de ondas continuas (µV) y distribución de probabilidades.", bold_title="Tablero Clínico Interactivo (Streamlit): ")
+    add_bullet_point(doc, "Toda la solución se encuentra contenerizada mediante un 'Dockerfile' optimizado (Python 3.12-slim) y orquestada con 'docker-compose.yml'. Define tres contenedores aislados: 'somnoscope-api' (puerto 8000), 'somnoscope-dashboard' (puerto 8050) y 'somnoscope-mlflow' (puerto 5000), permitiendo un despliegue reproducible en cualquier entorno de nube.", bold_title="Orquestación y Despliegue en Contenedores Docker: ")
 
     add_body_paragraph(
         doc,
-        "Los repositorios del código, modelos y tablero se encuentran versionados en GitHub en la rama de trabajo 'Arturo_Molina': https://github.com/Nicolasdgg/MicroP1MAIA/tree/Arturo_Molina. Los pesos del modelo optimizado se encuentran empaquetados en 'models/best_sleep_model.pkl'.",
+        "Los repositorios del código, modelos, API, Dockerfile y tablero se encuentran versionados en GitHub en la rama de trabajo 'Arturo_Molina': https://github.com/Nicolasdgg/MicroP1MAIA/tree/Arturo_Molina. Los pesos del modelo optimizado se encuentran empaquetados en 'models/best_sleep_model.pkl'.",
         bold_prefix="Trazabilidad y Fuentes de Código: "
     )
 

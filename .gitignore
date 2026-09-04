@@ -53,3 +53,7 @@ Thumbs.db
 
 # PDFs de referencia
 referencias/
+
+# Archives
+*.tar.gz
+*.zip

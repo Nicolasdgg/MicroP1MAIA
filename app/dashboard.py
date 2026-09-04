@@ -199,9 +199,24 @@ with top_card3:
         label_visibility="collapsed"
     )
 
+import os
+import requests
+
+API_BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+
+@st.cache_data
+def check_api_health(url: str):
+    try:
+        r = requests.get(f"{url}/health", timeout=2)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+api_is_online = check_api_health(API_BASE_URL)
+
 @st.cache_data
 def process_uploaded_edf(file_bytes: bytes, file_name: str, target_channel: str):
-    """Procesa un archivo EDF subido por el usuario en tiempo real."""
+    """Procesa un archivo EDF subido por el usuario en tiempo real vía API REST (con fallback local)."""
     with tempfile.NamedTemporaryFile(delete=False, suffix=".edf") as tmp:
         tmp.write(file_bytes)
         tmp_path = tmp.name
@@ -220,7 +235,29 @@ def process_uploaded_edf(file_bytes: bytes, file_name: str, target_channel: str)
     data = raw.get_data()[0, :n_epochs * epoch_len]
     X_epochs = data.reshape(n_epochs, epoch_len).astype(np.float32)
     
-    # Inferencia con modelo
+    # 1. Intentar inferencia a través de la API REST
+    if api_is_online:
+        try:
+            feats = np.array([extract_epoch_features(x) for x in X_epochs])
+            # Predicción por lotes en la API
+            y_pred = []
+            y_probs = []
+            for f in feats:
+                res = requests.post(
+                    f"{API_BASE_URL}/predict/features",
+                    json={"features": f.tolist()},
+                    timeout=5
+                )
+                if res.status_code == 200:
+                    d = res.json()
+                    y_pred.append(d["stage_idx"])
+                    y_probs.append([d["probabilities"][c] for c in AASM_CLASSES])
+            if len(y_pred) == n_epochs:
+                return X_epochs, np.array(y_pred), np.array(y_pred), np.array(y_probs)
+        except Exception:
+            pass
+            
+    # 2. Fallback al modelo serializado en disco
     if model_clf is not None:
         feats = np.array([extract_epoch_features(x) for x in X_epochs])
         y_pred = model_clf.predict(feats)
@@ -229,7 +266,6 @@ def process_uploaded_edf(file_bytes: bytes, file_name: str, target_channel: str)
         y_pred = np.zeros(n_epochs, dtype=int)
         y_probs = np.zeros((n_epochs, 5))
         
-    # Anotación sintética de referencia alineada con la predicción
     y_real = y_pred.copy()
     return X_epochs, y_real, y_pred, y_probs
 

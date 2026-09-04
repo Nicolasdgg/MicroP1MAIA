@@ -1,0 +1,13 @@
+.git
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+env
+*.log
+*.docx
+*.tar.gz
+data/processed/*.npz
+mlflow.db
+mlruns/
