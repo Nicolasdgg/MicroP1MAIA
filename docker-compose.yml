@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Servicio 1: API REST de Inferencia (FastAPI)
   api:
