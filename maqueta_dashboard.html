@@ -366,7 +366,7 @@
 
   /* confusion matrix */
   .cm-wrap { overflow-x: auto; }
-  table.cm { border-collapse: collapse; width: 100%; font-size: 12px; }
+  table.cm { border-collapse: collapse; width: 100%; font-size: 13px; }
   table.cm th, table.cm td {
     text-align: center;
     padding: 7px 6px;
@@ -447,7 +447,7 @@
   footer.note {
     text-align: center;
     color: var(--ink-400);
-    font-size: 12px;
+    font-size: 13px;
     padding-top: 8px;
   }
 </style>
@@ -594,7 +594,7 @@
     const el = document.getElementById(id);
     const w = (100/seq.length).toFixed(4) + '%';
     el.innerHTML = seq.map((s,i) => {
-      const start = 22 + Math.floor(i * (8*60/seq.length)); // ilustrativo
+      const start = 22 + Math.floor(i * (8*60/seq.length)); 
       return `<div class="seg" style="width:${w}; background:${stageColor[s]}" data-tip="Época ${i+1} · ${s}"></div>`;
     }).join('');
   }
