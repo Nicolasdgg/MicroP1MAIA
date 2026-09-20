@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     container_name: somnoscope-api
     command: uvicorn app.api:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ./data/raw:/app/data/raw:ro
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -24,6 +26,8 @@ services:
     command: streamlit run app/dashboard.py --server.port 8050 --server.address 0.0.0.0 --server.headless true
     environment:
       - API_URL=http://api:8000
+    volumes:
+      - ./data/raw:/app/data/raw:ro
     ports:
       - "8050:8050"
     depends_on:

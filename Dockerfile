@@ -28,6 +28,9 @@ COPY src/ /app/src/
 COPY models/ /app/models/
 COPY app/ /app/app/
 COPY data/raw/sleep-cassette/SC4001* /app/data/raw/sleep-cassette/
+COPY data/raw/sleep-cassette/SC4002* /app/data/raw/sleep-cassette/
+COPY data/raw/sleep-telemetry/ST7011* /app/data/raw/sleep-telemetry/
+COPY data/raw/sleep-telemetry/ST7022* /app/data/raw/sleep-telemetry/
 COPY tests/ /app/tests/
 
 EXPOSE 8000 8050 5000
