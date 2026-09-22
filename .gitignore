@@ -29,6 +29,7 @@ ENV/
 data/raw/
 data/interim/
 data/processed/*.npz
+ejemplos_demo_edf/
 *.parquet
 *.xlsx
 !data/samples/*.csv
