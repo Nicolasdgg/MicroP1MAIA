@@ -80,26 +80,26 @@ def set_cell_background(cell, fill_hex):
     shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{fill_hex}"/>')
     tcPr.append(shd)
 
-def set_cell_margins(cell, top=80, bottom=80, left=100, right=100):
+def set_cell_margins(cell, top=60, bottom=60, left=60, right=60):
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = parse_xml(f'<w:tcMar {nsdecls("w")}><w:top w:w="{top}" w:type="dxa"/><w:bottom w:w="{bottom}" w:type="dxa"/><w:left w:w="{left}" w:type="dxa"/><w:right w:w="{right}" w:type="dxa"/></w:tcMar>')
     tcPr.append(tcMar)
 
 def insert_comparison_table(target_p):
     table_data = [
-        ["Modelo", "Versión / Iteración", "Accuracy", "F1-Macro", "Kappa", "F1-N3", "Latencia", "MLflow Registry"],
-        ["LightGBM", "v2 (Champion - E3)", "66.21%", "0.5383", "0.5316", "73.73%", "< 2 ms", "Production (@champion)"],
-        ["LightGBM", "v1 (Baseline - E2)", "67.21%", "0.5525", "0.5424", "71.12%", "< 2 ms", "Archived (v1)"],
-        ["Random Forest", "v2 (Tuned - E3)", "61.73%", "0.5024", "0.4718", "49.24%", "~35 ms", "Production (v2)"],
-        ["Random Forest", "v1 (Baseline - E2)", "64.73%", "0.5548", "0.5200", "64.55%", "~18 ms", "Archived (v1)"],
-        ["TinySleepNet", "v1 (CNN+BiLSTM)", "50.24%", "0.1338", "0.0000", "0.00%", "~45 ms", "Production (v1)"]
+        ["Modelo", "Versión / Rol", "Accuracy", "F1-Macro", "Kappa", "F1-N1 (Prior.)", "F1-N3 (Prof.)", "Latencia", "MLflow Registry"],
+        ["LightGBM", "v1 (Champion Oficial)", "67.21%", "0.5525", "0.5424", "0.0874", "71.12%", "< 2 ms", "Production (@champion)"],
+        ["LightGBM", "v2 (Challenger / Tuned)", "66.21%", "0.5383", "0.5316", "0.0758", "73.73%", "< 2 ms", "Candidate (@challenger)"],
+        ["Random Forest", "v1 (Baseline)", "64.73%", "0.5548", "0.5200", "0.0656", "64.55%", "~18 ms", "Archived (v1)"],
+        ["Random Forest", "v2 (Tuned)", "61.73%", "0.5024", "0.4718", "0.0643", "49.24%", "~35 ms", "Archived (v2)"],
+        ["TinySleepNet", "v1 (CNN+BiLSTM)", "50.24%", "0.1338", "0.0000", "0.0000", "0.00%", "~45 ms", "Archived (v1)"]
     ]
     
-    table = target_p._parent.add_table(rows=len(table_data), cols=len(table_data[0]), width=Inches(6.8))
+    table = target_p._parent.add_table(rows=len(table_data), cols=len(table_data[0]), width=Inches(6.9))
     target_p._p.addprevious(table._tbl)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     
-    col_widths = [Inches(1.2), Inches(1.5), Inches(0.75), Inches(0.75), Inches(0.65), Inches(0.75), Inches(0.8), Inches(1.4)]
+    col_widths = [Inches(0.95), Inches(1.30), Inches(0.60), Inches(0.60), Inches(0.55), Inches(0.65), Inches(0.65), Inches(0.55), Inches(1.05)]
     
     for r_idx, row in enumerate(table.rows):
         is_header = (r_idx == 0)
@@ -108,7 +108,7 @@ def insert_comparison_table(target_p):
         for c_idx, cell in enumerate(row.cells):
             cell.width = col_widths[c_idx]
             cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            set_cell_margins(cell, top=70, bottom=70, left=80, right=80)
+            set_cell_margins(cell, top=60, bottom=60, left=60, right=60)
             
             p = cell.paragraphs[0]
             p.paragraph_format.space_before = Pt(1)
@@ -118,7 +118,7 @@ def insert_comparison_table(target_p):
             val = table_data[r_idx][c_idx]
             run = p.add_run(val)
             run.font.name = 'Montserrat SemiBold' if (is_header or is_champion) else 'Montserrat Light'
-            run.font.size = Pt(8)
+            run.font.size = Pt(7.5)
             
             if is_header:
                 set_cell_background(cell, "5B57D1")
@@ -141,6 +141,29 @@ def build_report():
     
     doc = docx.Document(dst_path)
     
+    # =========================================================================
+    # AJUSTE 1 (COMENTARIO 1): PARTICIÓN DE DATOS Y PREVENCIÓN DE DATA LEAKAGE
+    # =========================================================================
+    target_dataset_idx = None
+    for i, p in enumerate(doc.paragraphs):
+        if 'Descripción de conjuntos de datos:' in p.text or 'Sleep-EDF Database Expanded' in p.text:
+            target_dataset_idx = i + 1
+            break
+            
+    if target_dataset_idx is not None:
+        p_split = doc.paragraphs[target_dataset_idx].insert_paragraph_before()
+        style_body(p_split, "Estrategia de partición de datos y prevención de fuga (data leakage): ",
+                   "En el análisis de registros electroencefalográficos (EEG), las épocas temporales continuas de un mismo paciente presentan una alta autocorrelación morfológica, espectral y de impedancia intracraneal. Realizar una partición aleatoria convencional a nivel de épocas causaría una severa fuga de datos (data leakage), inflando artificialmente el rendimiento con patrones idiosincrásicos propios del sujeto presentes simultáneamente en entrenamiento y validación. Para garantizar una rigurosa validez clínica, la división de los datos se efectuó estrictamente a nivel de sujeto mediante GroupShuffleSplit (70% para entrenamiento y 30% para prueba/validación con semilla fija random_state=42), agrupando por identificador de paciente (groups=subjects). Esto asegura que el 100% de las épocas de un paciente residan exclusivamente en un único conjunto, evaluando la capacidad real del sistema para generalizar ante estudios polisomnográficos de sujetos completamente inéditos.")
+        print("[OK] Insertada sección de partición de datos por sujeto (Comentario 1).")
+
+    # Renombrar tabla de colaboradores a Tabla 3 para preservar numeración estricta
+    for p in doc.paragraphs:
+        if 'Tabla 2: Matriz de Responsabilidades' in p.text or 'Tabla 2: Matriz de Responsabilidades, Dedicaci' in p.text:
+            for r in p.runs:
+                if 'Tabla 2' in r.text:
+                    r.text = r.text.replace('Tabla 2', 'Tabla 3')
+            print("[OK] Renombrada tabla de colaboradores a Tabla 3.")
+
     # Locate index of Colaboradores
     target_idx = None
     for i, p in enumerate(doc.paragraphs):
@@ -157,27 +180,39 @@ def build_report():
         return target_p.insert_paragraph_before()
         
     # =========================================================================
-    # SECCIÓN 1: VERSIONAMIENTO EN MLFLOW, COMPARACIÓN Y MODELO CHAMPION
+    # SECCIÓN 1: VERSIONAMIENTO EN MLFLOW, COMPARACIÓN Y MODELO CHAMPION (COMENTARIO 2)
     # =========================================================================
     style_heading(insert_p(), "Versionamiento de Modelos en MLflow: Iteración, Comparación y Selección Champion")
     
-    style_body(insert_p(), "Evolución y reentrenamiento de nuevas versiones (Semana 6 y 7): ",
-               "En estricto cumplimiento con la rúbrica de la Entrega 3 ('Desarrollar nuevas versiones de los modelos, comparar y seleccionar mejores alternativas; versionando los modelos en MLflow'), se diseñó una segunda iteración analítica (v2) enfocada en la optimización de hiperparámetros y la reducción de falsos positivos en transiciones de sueño:")
+    style_body(insert_p(), "Evolución y reentrenamiento de nuevas versiones (Semanas 6 y 7): ",
+               "En estricto cumplimiento con la rúbrica de la Entrega 3 ('Desarrollar nuevas versiones de los modelos, comparar y seleccionar mejores alternativas; versionando los modelos en MLflow'), se diseñó y ejecutó una segunda iteración analítica (v2) sobre la misma partición estricta por sujeto (GroupShuffleSplit 70/30). Esta fase se concentró en la optimización de hiperparámetros, regularización y ponderación de clases para mitigar falsos positivos y evaluar posibles mejoras en transiciones de sueño:")
                
     style_bullet(insert_p(), "Random Forest v2 (Tuned Ensemble): ",
-                 "Se incrementó el bosque a 250 estimadores con profundidad máxima de 16, división mínima de 4 muestras y pesos de clase balanceados por subsample ('balanced_subsample') para compensar el desbalance crítico en estadios N1 y REM.")
+                 "Se incrementó a 250 estimadores con profundidad máxima de 16, división mínima de 4 muestras y pesos de clase balanceados por réplica ('balanced_subsample'). Aunque exhibió estabilidad operativa, la varianza acumulada en árboles profundos redujo su generalización global (Accuracy 61.73%, F1-Macro 0.5024) frente al baseline de 100 estimadores (v1).")
                  
     style_bullet(insert_p(), "LightGBM v2 (Fine-Tuned Gradient Boosting): ",
-                 "Se amplió a 300 árboles con tasa de aprendizaje conservadora (lr=0.03), control de profundidad máxima (7, con 31 hojas), submuestreo de instancias y características (subsample=0.85, colsample=0.85) y regularización explícita L1/L2 (alpha=0.1, lambda=1.5) para penalizar divisiones redundantes en épocas transitorias.")
+                 "Se amplió a 300 árboles con tasa de aprendizaje conservadora (lr=0.03), control de profundidad máxima (7, con 31 hojas), submuestreo de instancias y atributos (subsample=0.85, colsample=0.85) y regularización explícita L1/L2 (alpha=0.1, lambda=1.5) para penalizar divisiones oportunistas causadas por ruido espectral en épocas de transición.")
 
-    style_subheading(insert_p(), "Tabla 2: Comparativa de Modelos v1 vs v2 y Selección de Alternativa Champion")
+    style_subheading(insert_p(), "Tabla 2: Comparativa de Desempeño Clínico v1 vs v2 y Selección Oficial de Modelo Champion")
     insert_comparison_table(target_p)
     
-    style_body(insert_p(), "Criterio de selección del Modelo Champion: ",
-               "Aunque LightGBM v1 exhibió una leve superioridad en accuracy global impulsada por la clase mayoritaria N2, LightGBM v2 demostró un avance clínico determinante en la detección de sueño profundo N3 (F1-N3: 73.73%, incremento de +2.61 puntos porcentuales), una varianza significativamente menor y una mayor robustez contra artefactos electroencefalográficos transitorios. Junto con una latencia de inferencia inferior a 2 milisegundos por época, LightGBM v2 fue seleccionado como el modelo Champion oficial para producción y empaquetado en la API REST.")
+    style_body(insert_p(), "Criterio de selección del Modelo Champion y análisis del Estadio N1 (Prioritario): ",
+               "Bajo los principios de gobernanza de MLOps, un modelo candidato solo debe sustituir a producción si supera de manera consistente el desempeño del baseline en las métricas clínicas críticas y el rendimiento global. A partir de los resultados empíricos, LightGBM v1 es ratificado y seleccionado formalmente como el Modelo Champion Oficial (@champion / @production), fundamentado en los siguientes hallazgos:")
 
-    style_body(insert_p(), "Registro oficial en MLflow Model Registry: ",
-               "Todas las versiones fueron registradas formalmente en el Model Registry del servidor MLflow (http://18.212.239.119:5000): 'SomnoScope_LightGBM' (v1 en estado Archived, v2 en estado Production con alias @champion y @production), 'SomnoScope_RandomForest' (v1 Archived, v2 Production) y 'SomnoScope_TinySleepNet' (v1 Production). La comparación paramétrica y de métricas cruzadas está habilitada directamente en la vista Experiments.")
+    style_bullet(insert_p(), "Liderazgo en Métricas Globales: ",
+                 "LightGBM v1 supera a su variante v2 en exactitud diagnóstica global (Accuracy: 67.21% vs 66.21%), F1-Score Macro (0.5525 vs 0.5383) y concordancia inter-evaluador de Cohen's Kappa (0.5424 vs 0.5316), garantizando un hipnograma continuo más fiel y clínicamente coherente a lo largo de toda la noche.")
+
+    style_bullet(insert_p(), "Desempeño en el Estadio Prioritario N1: ",
+                 "El alcance del proyecto definió el estadio N1 como objetivo prioritario debido a su extrema minoría (<4% de las épocas) y alta tasa de subdiagnóstico. Al transparentar y contrastar el desempeño en esta clase crítica, LightGBM v1 demostró superioridad con un F1-Score de 0.0874 (8.74%) frente al 0.0758 (7.58%) obtenido por LightGBM v2.")
+
+    style_bullet(insert_p(), "Trade-off de Regularización en LightGBM v2 (Modelo Challenger): ",
+                 "La optimización en v2 logró su objetivo en sueño profundo N3, alcanzando un F1-N3 de 73.73% (+2.61 puntos porcentuales frente a v1) al estabilizar la detección de ondas lentas delta. No obstante, la restricción impuesta por la regularización L1/L2 penalizó la flexibilidad de corte en fronteras difusas (N1 y N2), deteriorando la sensibilidad general. En consecuencia, v2 se cataloga como modelo Challenger (@challenger) especializado en sueño profundo, manteniendo a v1 como Champion en el servicio clínico de inferencia.")
+
+    style_bullet(insert_p(), "Límites Fisiológicos de N1 con EEG Monocanal: ",
+                 "El valor absoluto de F1 en N1 (~8.7%) refleja una barrera biofísica real: N1 es un estado de transición somnolienta donde la concordancia diagnóstica entre neurólogos humanos es de apenas 60–65%. Discriminar N1 frente a vigilia y N2 mediante un único canal EEG (Fpz-Cz) y características espectrales alcanza un límite intrínseco de separabilidad; un incremento sustancial en N1 requiere señales electrooculográficas (EOG) y electromiográficas (EMG), capacidades que la arquitectura de SomnoScope ya contempla para fases clínicas multicanal.")
+
+    style_body(insert_p(), "Registro oficial y gobernanza en MLflow Model Registry: ",
+               "Todas las versiones e iteraciones están registradas en el servidor MLflow centralizado (http://18.212.239.119:5000): 'SomnoScope_LightGBM' (v1 en estado Production con alias @champion y @production; v2 en estado Candidate con alias @challenger), 'SomnoScope_RandomForest' (v1 Archived; v2 Candidate) y 'SomnoScope_TinySleepNet' (v1 Archived). Los artefactos, matrices de confusión discriminadas por versión e hipnogramas comparativos son auditables en la vista Experiments y Model Registry.")
 
     # =========================================================================
     # SECCIÓN 2: ARQUITECTURA DE MICROSERVICIOS, API REST Y DOCKER
@@ -185,7 +220,7 @@ def build_report():
     style_heading(insert_p(), "Despliegue y Arquitectura de Microservicios: API REST, Docker y DVC")
     
     style_body(insert_p(), "Servicio desacoplado vía API REST (FastAPI): ",
-               "El modelo Champion seleccionado (LightGBM v2) y el pipeline de normalización espectral fueron serializados en 'models/best_sleep_model.pkl'. La API REST construida con FastAPI expone esquemas de validación tipados mediante Pydantic y cuatro endpoints especializados:")
+               "El modelo Champion seleccionado (LightGBM v1) y el pipeline de normalización espectral fueron serializados en 'models/best_sleep_model.pkl'. La API REST construida con FastAPI expone esquemas de validación tipados mediante Pydantic y cuatro endpoints especializados:")
                
     style_bullet(insert_p(), "GET /health: ", "Endpoint de monitoreo y healthcheck continuo que verifica el estado operativo del servicio, las 5 clases objetivo AASM (W, N1, N2, N3, REM) y las 25 características espectrales.")
     style_bullet(insert_p(), "POST /predict/features: ", "Recibe un vector de 25 características espectrales calculadas para una época y retorna la clase diagnóstica predicha junto con la distribución probabilística calibrada.")

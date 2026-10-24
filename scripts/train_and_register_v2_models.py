@@ -352,19 +352,20 @@ def main():
     # =========================================================================
     print("\n[3/4] Configurando Aliases y Estados en el Model Registry...")
     try:
-        client.set_registered_model_alias("SomnoScope_LightGBM", "champion", "2")
-        client.set_registered_model_alias("SomnoScope_LightGBM", "production", "2")
-        client.update_model_version(
-            name="SomnoScope_LightGBM", 
-            version="2", 
-            description="Modelo LightGBM v2 con optimización de hiperparámetros (L1/L2, subsample y ponderación de clases). Seleccionado como Champion para producción en Entrega 3."
-        )
+        client.set_registered_model_alias("SomnoScope_LightGBM", "champion", "1")
+        client.set_registered_model_alias("SomnoScope_LightGBM", "production", "1")
+        client.set_registered_model_alias("SomnoScope_LightGBM", "challenger", "2")
         client.update_model_version(
             name="SomnoScope_LightGBM", 
             version="1", 
-            description="Modelo LightGBM v1 baseline de Entrega 2."
+            description="Modelo LightGBM v1 (Baseline Optimizado). Champion Oficial para producción: líder en Accuracy (67.21%), F1-Macro (0.5525), Kappa (0.5424) y estadio prioritario N1 (F1-N1: 0.0874)."
         )
-        print("[OK] Alias '@champion' y '@production' asignados a SomnoScope_LightGBM v2.")
+        client.update_model_version(
+            name="SomnoScope_LightGBM", 
+            version="2", 
+            description="Modelo LightGBM v2 con regularización L1/L2 y subsample (Challenger / Tuned). Logró avance focalizado en sueño profundo N3 (+2.61%), pero con menor desempeño global y en N1."
+        )
+        print("[OK] Alias '@champion' y '@production' asignados a SomnoScope_LightGBM v1, '@challenger' a v2.")
     except Exception as e:
         print(f"[Aviso] Alias LightGBM: {e}")
 
