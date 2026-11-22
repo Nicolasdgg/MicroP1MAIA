@@ -51,7 +51,8 @@ def main():
     else:
         print("\n[1/4] Cargando registros y segmentando épocas de 30s...")
         t0 = time.time()
-        X_raw, y, subjects = load_dataset_by_subjects(data_dir, max_records=6)
+        #X_raw, y, subjects = load_dataset_by_subjects(data_dir, max_records=6)
+        X_raw, y, subjects = load_dataset_by_subjects(data_dir)
         print(f"Total épocas cargadas: {len(y):,} en {time.time() - t0:.1f} s")
         np.savez_compressed(cache_path, X_raw=X_raw, y=y, subjects=subjects)
         print(f"Datos guardados en caché: {cache_path.name}")
