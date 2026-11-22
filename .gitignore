@@ -58,3 +58,6 @@ referencias/
 # Archives
 *.tar.gz
 *.zip
+
+# Archivos temporales de Office (lock files)
+~$*
