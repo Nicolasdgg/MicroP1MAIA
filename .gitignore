@@ -61,3 +61,6 @@ referencias/
 
 # Archivos temporales de Office (lock files)
 ~$*
+
+# Documentos locales fuera del alcance del repo
+Propuesta Proyecto de Grado/
