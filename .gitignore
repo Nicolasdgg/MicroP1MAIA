@@ -64,3 +64,6 @@ referencias/
 
 # Documentos locales fuera del alcance del repo
 Propuesta Proyecto de Grado/
+
+# Caché de pytest
+.pytest_cache/
