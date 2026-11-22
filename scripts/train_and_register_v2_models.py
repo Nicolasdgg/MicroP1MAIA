@@ -9,7 +9,6 @@ Registra formalmente las versiones en el Model Registry de MLflow y asigna alias
 
 import os
 import sys
-import time
 from pathlib import Path
 import joblib
 import numpy as np
@@ -17,7 +16,6 @@ import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.ensemble import RandomForestClassifier
 import lightgbm as lgb
-import torch
 import torch.nn as nn
 import mlflow
 import mlflow.sklearn
