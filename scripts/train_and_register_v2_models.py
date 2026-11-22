@@ -33,7 +33,7 @@ if str(repo_root) not in sys.path:
 from src.features.spectral import extract_features_dataset
 from src.models.evaluate import compute_sleep_metrics, plot_confusion_matrix
 
-REMOTE_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://18.212.239.119:5000")
+REMOTE_TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://54.224.191.50:5000")
 EXPERIMENT_NAME = "Microproyecto_Sleep_Staging"
 
 class Simple1DCNNBiLSTM(nn.Module):
