@@ -15,6 +15,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import mne
 import joblib
@@ -161,21 +162,44 @@ if "tour_step" not in st.session_state:
     st.session_state["tour_step"] = 0
 
 
-def render_info_popover(step_idx: int, label: str = "ℹ️"):
+def _tour_toggle():
+    st.session_state["tour_active"] = not st.session_state["tour_active"]
+    if st.session_state["tour_active"]:
+        st.session_state["tour_step"] = 0
+
+
+def _tour_prev():
+    st.session_state["tour_step"] = max(0, st.session_state["tour_step"] - 1)
+
+
+def _tour_next():
+    if st.session_state["tour_step"] < len(TOUR_STEPS) - 1:
+        st.session_state["tour_step"] += 1
+    else:
+        st.session_state["tour_active"] = False
+        st.session_state["tour_step"] = 0
+
+
+def _tour_close():
+    st.session_state["tour_active"] = False
+    st.session_state["tour_step"] = 0
+
+
+def render_info_popover(step_idx: int):
     step = TOUR_STEPS[step_idx]
     if hasattr(st, "popover"):
-        with st.popover(label, help=f"Ver finalidad de: {step['short']}"):
+        with st.popover("i", help=f"Información: {step['short']}"):
             st.markdown(f"**{step['title']}**")
             st.markdown(step["purpose"])
-            st.info(step["tip"])
+            st.markdown(f"<div style='font-size:12.5px; padding:8px 10px; border-radius:8px; background:rgba(99,102,241,0.12); border-left:3px solid #6366f1; margin-top:6px;'>{step['tip']}</div>", unsafe_allow_html=True)
     else:
-        with st.expander(f"{label} {step['short']}", expanded=False):
+        with st.expander(f"i · {step['short']}", expanded=False):
             st.markdown(step["purpose"])
             st.info(step["tip"])
 
 
 # ----------------- BARRA SUPERIOR -----------------
-top_c1, top_c2, top_c2b, top_c3, top_c4, top_c5 = st.columns([2.7, 1.7, 1.8, 1.1, 1.3, 1.2])
+top_c1, top_c2, top_c2b, top_c3, top_c4, top_c5 = st.columns([2.7, 1.7, 1.9, 1.2, 1.4, 1.1])
 
 with top_c1:
     st.markdown("""
@@ -213,15 +237,17 @@ with top_c3:
     theme_choice = st.selectbox("Tema:", ["☀️ Modo Claro", "🌙 Modo Oscuro"], index=1, label_visibility="collapsed")
 
 with top_c4:
-    show_upload = st.toggle("Cargar registro EDF", value=False)
+    show_upload = st.toggle("Cargar EDF", value=False)
 
 with top_c5:
-    tour_btn_label = "✖ Cerrar guía" if st.session_state["tour_active"] else "🧭 Recorrido guiado"
-    if st.button(tour_btn_label, use_container_width=True, type="primary" if not st.session_state["tour_active"] else "secondary"):
-        st.session_state["tour_active"] = not st.session_state["tour_active"]
-        if st.session_state["tour_active"]:
-            st.session_state["tour_step"] = 0
-        st.rerun()
+    tour_btn_label = "✖ Cerrar" if st.session_state["tour_active"] else "🧭 Guía"
+    st.button(
+        tour_btn_label,
+        use_container_width=True,
+        type="primary" if not st.session_state["tour_active"] else "secondary",
+        on_click=_tour_toggle,
+        key="btn_toggle_tour",
+    )
 
 # ----------------- VARIABLES DE TEMA (LIGHTING) -----------------
 is_dark = "Oscuro" in theme_choice
@@ -300,98 +326,174 @@ st.markdown(f"""
         align-items: center;
         gap: 8px;
     }}
-    .tour-panel {{
+    .tour-card-inline {{
         background: {"linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%)" if is_dark else "linear-gradient(135deg, #eef2ff 0%, #ffffff 100%)"};
         border: 2px solid #6366f1;
         border-radius: 12px;
-        padding: 16px 20px;
-        margin: 8px 0 14px 0;
-        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.22);
-    }}
-    .tour-section-flag {{
-        background-color: {"#312e81" if is_dark else "#e0e7ff"};
-        color: {"#e0e7ff" if is_dark else "#312e81"};
-        border-left: 4px solid #6366f1;
-        border-radius: 6px;
-        padding: 7px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        margin: 6px 0 8px 0;
+        padding: 14px 18px;
+        margin: 6px 0 10px 0;
+        box-shadow: 0 10px 28px rgba(99, 102, 241, 0.28);
+        color: {text_title};
     }}
     .tour-active-card {{
         border: 2px solid #6366f1 !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.24) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.28), 0 8px 24px rgba(99, 102, 241, 0.20) !important;
+        opacity: 1 !important;
+        transition: all 0.25s ease;
+    }}
+    .tour-dimmed-card {{
+        opacity: 0.35 !important;
+        filter: saturate(0.65);
+        transition: all 0.25s ease;
+    }}
+    /* Botones discretos circulares 'i' para ayuda contextual */
+    div[data-testid="stPopover"] {{
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }}
+    div[data-testid="stPopover"] > button {{
+        width: 26px !important;
+        height: 26px !important;
+        min-height: 26px !important;
+        min-width: 26px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        background-color: {"rgba(99, 102, 241, 0.16)" if is_dark else "rgba(79, 70, 229, 0.10)"} !important;
+        color: {"#a5b4fc" if is_dark else "#4f46e5"} !important;
+        border: 1px solid {"rgba(129, 140, 248, 0.45)" if is_dark else "rgba(79, 70, 229, 0.38)"} !important;
+        box-shadow: none !important;
+        transition: all 0.15s ease !important;
+    }}
+    div[data-testid="stPopover"] > button:hover {{
+        background-color: #6366f1 !important;
+        color: #ffffff !important;
+        border-color: #6366f1 !important;
+        transform: scale(1.06);
+    }}
+    div[data-testid="stPopover"] > button svg {{
+        display: none !important;
+    }}
+    div[data-testid="stPopover"] > button p {{
+        margin: 0 !important;
+        font-family: Georgia, serif !important;
+        font-style: italic !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        line-height: 1 !important;
+    }}
+    /* Contraste nítido en botones secundarios y primarios en Modo Claro y Oscuro */
+    button[data-testid="stBaseButton-secondary"] {{
+        background-color: {"#1e293b" if is_dark else "#ffffff"} !important;
+        color: {"#f8fafc" if is_dark else "#1e293b"} !important;
+        border: 1px solid {"#475569" if is_dark else "#cbd5e1"} !important;
+    }}
+    button[data-testid="stBaseButton-secondary"]:disabled {{
+        background-color: {"#0f172a" if is_dark else "#f1f5f9"} !important;
+        color: {"#475569" if is_dark else "#94a3b8"} !important;
+        border-color: {"#1e293b" if is_dark else "#e2e8f0"} !important;
+    }}
+    button[data-testid="stBaseButton-primary"] {{
+        background-color: #4f46e5 !important;
+        color: #ffffff !important;
+        border: 1px solid #4f46e5 !important;
+    }}
+    button[data-testid="stBaseButton-primary"]:hover {{
+        background-color: #4338ca !important;
+        border-color: #4338ca !important;
     }}
 </style>
 """, unsafe_allow_html=True)
 
 
 def tour_card_cls(step_idx: int) -> str:
-    return "tour-active-card" if (st.session_state["tour_active"] and st.session_state["tour_step"] == step_idx) else ""
+    if not st.session_state["tour_active"]:
+        return ""
+    return "tour-active-card" if st.session_state["tour_step"] == step_idx else "tour-dimmed-card"
 
 
 def render_tour_flag(step_idx: int):
-    if st.session_state["tour_active"] and st.session_state["tour_step"] == step_idx:
-        step = TOUR_STEPS[step_idx]
-        st.markdown(
-            f"<div class='tour-section-flag'>📍 Paso {step_idx + 1} de {len(TOUR_STEPS)} — {step['title']}</div>",
-            unsafe_allow_html=True,
-        )
+    """Abre el cuadro explicativo del recorrido guiado directamente sobre la sección activa con navegación y auto-scroll."""
+    if not (st.session_state["tour_active"] and st.session_state["tour_step"] == step_idx):
+        return
 
+    step = TOUR_STEPS[step_idx]
+    total = len(TOUR_STEPS)
+    dots_html = " ".join(
+        f"<span style='color:{'#818cf8' if i == step_idx else ('#475569' if is_dark else '#cbd5e1')}; font-size:13px;'>{'●' if i == step_idx else '○'}</span>"
+        for i in range(total)
+    )
+    tip_bg = "rgba(99, 102, 241, 0.16)" if is_dark else "rgba(79, 70, 229, 0.08)"
+    tip_color = "#e0e7ff" if is_dark else "#312e81"
 
-# ----------------- PANEL INTERACTIVO DEL RECORRIDO GUIADO -----------------
-if st.session_state["tour_active"]:
-    cur_idx = st.session_state["tour_step"]
-    cur_step = TOUR_STEPS[cur_idx]
+    # Convertir markdown simple (**negrita** y `código`) a HTML limpio dentro de la tarjeta unificada
+    import re
+    def _md_inline(s: str) -> str:
+        s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
+        s = re.sub(r"\*(.+?)\*", r"<em>\1</em>", s)
+        code_bg = "#0f172a" if is_dark else "#e2e8f0"
+        code_fg = "#93c5fd" if is_dark else "#1e293b"
+        s = re.sub(r"`(.+?)`", rf"<code style='background:{code_bg}; color:{code_fg}; padding:1px 5px; border-radius:4px; font-size:11.5px;'>\1</code>", s)
+        return s
+
     st.markdown(f"""
-    <div class="tour-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-            <span style="background-color:#6366f1; color:white; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">
-                🧭 RECORRIDO PARA EVALUADORES · PASO {cur_idx + 1} DE {len(TOUR_STEPS)}
+    <div id="somnoscope-tour-anchor"></div>
+    <div class="tour-card-inline">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px;">
+            <span style="background-color:#4f46e5; color:#ffffff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:0.3px;">
+                📍 PASO {step_idx + 1} DE {total} · RECORRIDO GUIADO
             </span>
-            <span style="font-size:11.5px; color:{text_muted};">SomnoScope · Guía interactiva de arquitectura clínica y MLOps</span>
+            <div>{dots_html}</div>
         </div>
-        <div style="font-size:16px; font-weight:700; color:{text_title}; margin-bottom:6px;">{cur_step['title']}</div>
+        <div style="font-size:15.5px; font-weight:700; color:{text_title}; margin-bottom:6px;">{step['title']}</div>
+        <div style="font-size:13px; color:{text_sub}; line-height:1.5; margin-bottom:8px;">{_md_inline(step['purpose'])}</div>
+        <div style="font-size:12.5px; color:{tip_color}; background:{tip_bg}; border-left:3px solid #6366f1; border-radius:6px; padding:8px 12px; line-height:1.45;">
+            {_md_inline(step['tip'])}
+        </div>
     </div>
     """, unsafe_allow_html=True)
-    st.progress((cur_idx + 1) / len(TOUR_STEPS))
-    st.markdown(cur_step["purpose"])
-    st.info(cur_step["tip"])
 
-    t_nav1, t_nav2, t_nav3, t_nav4 = st.columns([1.2, 2.8, 1.3, 1.0])
-    with t_nav1:
-        if st.button("⬅️ Anterior", disabled=(cur_idx == 0), use_container_width=True, key="tour_prev"):
-            st.session_state["tour_step"] = max(0, cur_idx - 1)
-            st.rerun()
-    with t_nav2:
-        step_labels = [s["short"] for s in TOUR_STEPS]
-        chosen_jump = st.selectbox(
-            "Ir directamente a una sección:",
-            step_labels,
-            index=cur_idx,
-            label_visibility="collapsed",
-            key="tour_jump_select",
+    nav_c1, nav_c2, nav_c3, nav_spacer = st.columns([1.2, 1.4, 1.0, 6.4])
+    with nav_c1:
+        st.button(
+            "⬅️ Anterior",
+            disabled=(step_idx == 0),
+            use_container_width=True,
+            on_click=_tour_prev,
+            key=f"tour_prev_{step_idx}",
         )
-        new_jump_idx = step_labels.index(chosen_jump)
-        if new_jump_idx != cur_idx:
-            st.session_state["tour_step"] = new_jump_idx
-            st.rerun()
-    with t_nav3:
-        if cur_idx < len(TOUR_STEPS) - 1:
-            if st.button("Siguiente ➡️", type="primary", use_container_width=True, key="tour_next"):
-                st.session_state["tour_step"] = cur_idx + 1
-                st.rerun()
-        else:
-            if st.button("✅ Finalizar", type="primary", use_container_width=True, key="tour_finish"):
-                st.session_state["tour_active"] = False
-                st.session_state["tour_step"] = 0
-                st.rerun()
-    with t_nav4:
-        if st.button("✖ Salir", use_container_width=True, key="tour_exit"):
-            st.session_state["tour_active"] = False
-            st.rerun()
+    with nav_c2:
+        next_lbl = "Siguiente ➡️" if step_idx < total - 1 else "✅ Finalizar"
+        st.button(
+            next_lbl,
+            type="primary",
+            use_container_width=True,
+            on_click=_tour_next,
+            key=f"tour_next_{step_idx}",
+        )
+    with nav_c3:
+        st.button(
+            "✖ Salir",
+            use_container_width=True,
+            on_click=_tour_close,
+            key=f"tour_exit_{step_idx}",
+        )
 
-# Bandera del Paso 1 si está activo
+    # Desplazamiento suave automático hacia la sección activa
+    components.html(
+        f"""<script>
+        (function() {{
+            try {{
+                var el = window.parent.document.getElementById('somnoscope-tour-anchor');
+                if (el) {{ el.scrollIntoView({{behavior: 'smooth', block: 'center'}}); }}
+            }} catch (e) {{}}
+        }})();
+        </script><!-- step-{step_idx} -->""",
+        height=0,
+    )
+
+
+# Bandera/Tarjeta del Paso 1 si está activo
 render_tour_flag(0)
 
 # ----------------- SECCIÓN DE CARGA DE ARCHIVO EDF (FUNCIONALIDAD COMPLETA) -----------------
@@ -405,13 +507,13 @@ if show_upload:
     """, unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Seleccionar archivo .edf:", type=["edf"], key="uploader_edf", label_visibility="collapsed")
 
-# Banner informativo + botón de ayuda de la barra de control
+# Banner informativo + botón discreto 'i' de la barra de control
 active_model_banner = (
     "TinySleepNet1D v2 (1D-CNN + BiLSTM con normalización z-score por época — Modelo Champion)"
     if use_tinysleepnet
     else "LightGBM multiclase optimizado (25 características espectrales — Modelo Clásico)"
 )
-ban_c1, ban_c2 = st.columns([9.2, 0.8])
+ban_c1, ban_c2 = st.columns([9.6, 0.4])
 with ban_c1:
     st.markdown(f"""
     <div class="badge-banner {tour_card_cls(0)}">
@@ -419,8 +521,8 @@ with ban_c1:
     </div>
     """, unsafe_allow_html=True)
 with ban_c2:
-    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-    render_info_popover(0, "ℹ️")
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+    render_info_popover(0)
 
 # ----------------- PROCESAMIENTO Y CARGA DE DATOS -----------------
 # Fila 1 de Tarjetas Superiores
@@ -591,7 +693,7 @@ assigned_stage_prob = y_probs[default_epoch_idx, y_pred[default_epoch_idx]] * 10
 
 with top_card1:
     st.markdown(f"""
-    <div class="card-box" style="padding: 12px 16px;">
+    <div class="card-box {tour_card_cls(1)}" style="padding: 12px 16px;">
         <div class="metric-top-lbl">Estadio Asignado</div>
         <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 2px;">
             <span style="font-size: 28px; font-weight: 800; color: {assigned_stage_color};">{assigned_stage_name}</span>
@@ -602,7 +704,7 @@ with top_card1:
 
 with top_card2:
     st.markdown(f"""
-    <div class="card-box" style="padding: 12px 16px;">
+    <div class="card-box {tour_card_cls(1)}" style="padding: 12px 16px;">
         <div class="metric-top-lbl">Épocas Totales</div>
         <div class="metric-top-val" style="margin-top: 4px;">{total_epochs:,}</div>
     </div>
@@ -613,7 +715,7 @@ with top_card3:
 
 with top_card4:
     st.markdown(f"""
-    <div class="card-box" style="padding: 12px 16px;">
+    <div class="card-box {tour_card_cls(1)}" style="padding: 12px 16px;">
         <div class="metric-top-lbl">Calidad de Datos</div>
         <div style="font-size: 12px; color: {text_sub}; margin-top: 4px;">
             <div>● 12 épocas "M" excluidas</div>
@@ -624,11 +726,11 @@ with top_card4:
 
 # ----------------- FILA 2: 5 TARJETAS KPIS EXACTAS A IMAGEN 2 -----------------
 render_tour_flag(1)
-kpi_hdr1, kpi_hdr2 = st.columns([9.2, 0.8])
+kpi_hdr1, kpi_hdr2 = st.columns([9.6, 0.4])
 with kpi_hdr1:
-    st.markdown(f"<div style='font-size:12px; font-weight:700; color:{text_muted}; text-transform:uppercase; letter-spacing:0.6px; margin:2px 0 6px 2px;'>Indicadores Clínicos de Arquitectura del Sueño</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:12px; font-weight:700; color:{text_muted}; text-transform:uppercase; letter-spacing:0.6px; margin:4px 0 6px 2px;'>Indicadores Clínicos de Arquitectura del Sueño</div>", unsafe_allow_html=True)
 with kpi_hdr2:
-    render_info_popover(1, "ℹ️")
+    render_info_popover(1)
 
 kpi_cls = tour_card_cls(1)
 kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
@@ -670,7 +772,7 @@ kpi5.markdown(f"""
 
 # ----------------- SECCIÓN CENTRAL: HIPNOGRAMA DE LA NOCHE -----------------
 render_tour_flag(2)
-hip_h1, hip_h2 = st.columns([9.2, 0.8])
+hip_h1, hip_h2 = st.columns([9.6, 0.4])
 with hip_h1:
     st.markdown(f"""
     <div class="card-box {tour_card_cls(2)}" style="margin-bottom: 12px;">
@@ -690,8 +792,8 @@ with hip_h1:
     </div>
     """, unsafe_allow_html=True)
 with hip_h2:
-    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-    render_info_popover(2, "ℹ️")
+    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+    render_info_popover(2)
 
 # Heatmap continuo de dos franjas
 custom_colorscale = [
@@ -740,7 +842,7 @@ st.plotly_chart(fig_ribbon, use_container_width=True, config={'displayModeBar': 
 
 # ----------------- SECCIÓN: INSPECTOR DE ÉPOCA (ONDA Y PROBABILIDADES) -----------------
 render_tour_flag(3)
-ins_h1, ins_h2 = st.columns([9.2, 0.8])
+ins_h1, ins_h2 = st.columns([9.6, 0.4])
 with ins_h1:
     st.markdown(f"""
     <div class="card-box {tour_card_cls(3)}">
@@ -749,8 +851,8 @@ with ins_h1:
     </div>
     """, unsafe_allow_html=True)
 with ins_h2:
-    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
-    render_info_popover(3, "ℹ️")
+    st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+    render_info_popover(3)
 
 selected_epoch = st.slider("Seleccionar Época de Inspección:", 0, total_epochs - 1, default_epoch_idx, label_visibility="collapsed")
 
@@ -825,11 +927,11 @@ for r, p in zip(y_real, y_pred):
     cm[r, p] += 1
 
 with bot_c1:
-    m_h1, m_h2 = st.columns([8.0, 2.0])
+    m_h1, m_h2 = st.columns([8.8, 1.2])
     with m_h1:
-        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Desempeño por Sujeto</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin:4px 0;'>Desempeño por Sujeto</div>", unsafe_allow_html=True)
     with m_h2:
-        render_info_popover(4, "ℹ️")
+        render_info_popover(4)
     st.markdown(f"""
     <div class="card-box {tour_card_cls(4)}" style="min-height: 290px;">
         <div class="card-header-title">Matriz de confusión</div>
@@ -903,11 +1005,11 @@ macro_f1 = np.mean(list(f1_per_c.values()))
 
 # TARJETA 2: F1-SCORE POR CLASE (HTML ESTRICTO CON SANGRÍA CERO)
 with bot_c2:
-    f1_h1, f1_h2 = st.columns([8.0, 2.0])
+    f1_h1, f1_h2 = st.columns([8.8, 1.2])
     with f1_h1:
-        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Métricas por Estadio (Foco N1)</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin:4px 0;'>Métricas por Estadio (Foco N1)</div>", unsafe_allow_html=True)
     with f1_h2:
-        render_info_popover(4, "ℹ️")
+        render_info_popover(4)
     f1_rows = ""
     for cls in AASM_CLASSES:
         color = STAGE_COLORS[cls]
@@ -939,11 +1041,11 @@ with bot_c2:
 
 # TARJETA 3: CORRIDAS REGISTRADAS (MLFLOW)
 with bot_c3:
-    ml_h1, ml_h2 = st.columns([8.2, 1.8])
+    ml_h1, ml_h2 = st.columns([8.8, 1.2])
     with ml_h1:
-        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Gobernanza MLOps</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin:4px 0;'>Gobernanza MLOps</div>", unsafe_allow_html=True)
     with ml_h2:
-        render_info_popover(5, "ℹ️")
+        render_info_popover(5)
     comp_csv = repo_root / "reports" / "tabla_comparativa_modelos_v1_vs_v2.csv"
     mlflow_rows_html = ""
     if comp_csv.exists():
