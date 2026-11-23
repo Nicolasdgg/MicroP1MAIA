@@ -125,9 +125,11 @@ def main():
                     registered_model_name=reg_name,
                 )
             else:
+                dummy_in = np.zeros((1, 1, 3000), dtype=np.float32)
                 mlflow.pytorch.log_model(
                     pytorch_model=mdl_obj,
                     artifact_path="model",
+                    input_example=dummy_in,
                     registered_model_name=reg_name,
                 )
             print(f"[OK] Registrado {reg_name} ({ver_tag}) | Acc={metrics['accuracy']:.4f} | F1-Macro={metrics['f1_macro']:.4f} | F1-N1={metrics['f1_N1']:.4f}")
