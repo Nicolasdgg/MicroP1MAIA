@@ -212,7 +212,7 @@ def build_report():
                  "El valor absoluto de F1 en N1 (~8.7%) refleja una barrera biofísica real: N1 es un estado de transición somnolienta donde la concordancia diagnóstica entre neurólogos humanos es de apenas 60–65%. Discriminar N1 frente a vigilia y N2 mediante un único canal EEG (Fpz-Cz) y características espectrales alcanza un límite intrínseco de separabilidad; un incremento sustancial en N1 requiere señales electrooculográficas (EOG) y electromiográficas (EMG), capacidades que la arquitectura de SomnoScope ya contempla para fases clínicas multicanal.")
 
     style_body(insert_p(), "Registro oficial y gobernanza en MLflow Model Registry: ",
-               "Todas las versiones e iteraciones están registradas en el servidor MLflow centralizado (http://54.224.191.50:5000): 'SomnoScope_LightGBM' (v1 en estado Production con alias @champion y @production; v2 en estado Candidate con alias @challenger), 'SomnoScope_RandomForest' (v1 Archived; v2 Candidate) y 'SomnoScope_TinySleepNet' (v1 Archived). Los artefactos, matrices de confusión discriminadas por versión e hipnogramas comparativos son auditables en la vista Experiments y Model Registry.")
+               "Todas las versiones e iteraciones están registradas en el servidor MLflow centralizado (http://184.73.140.131:5000): 'SomnoScope_LightGBM' (v1 en estado Production con alias @champion y @production; v2 en estado Candidate con alias @challenger), 'SomnoScope_RandomForest' (v1 Archived; v2 Candidate) y 'SomnoScope_TinySleepNet' (v1 Archived). Los artefactos, matrices de confusión discriminadas por versión e hipnogramas comparativos son auditables en la vista Experiments y Model Registry.")
 
     # =========================================================================
     # SECCIÓN 2: ARQUITECTURA DE MICROSERVICIOS, API REST Y DOCKER
@@ -270,7 +270,7 @@ def build_report():
     style_heading(insert_p(), "Manual de Usuario - Sistema SomnoScope")
     
     style_subheading(insert_p(), "Acceso al Sistema y Carga de Estudios")
-    style_body(insert_p(), "Acceso: ", "Ingrese localmente a 'http://localhost:8050' o en la nube a 'http://54.224.191.50:8050'.")
+    style_body(insert_p(), "Acceso: ", "Ingrese localmente a 'http://localhost:8050' o en la nube a 'http://184.73.140.131:8050'.")
     style_body(insert_p(), "Procedimiento de carga: ", "En el panel lateral izquierdo, seleccione un paciente precargado de validación clínica (ej. 'SC4001E0') o cargue un archivo polisomnográfico externo en formato .edf con canal EEG Fpz-Cz o Pz-Oz a 100 Hz. La inferencia se envía automáticamente a la API REST.")
 
     style_subheading(insert_p(), "Interpretación de Resultados Clínicos")
