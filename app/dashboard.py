@@ -228,13 +228,13 @@ with top_c2:
     selected_subject_label = st.selectbox("Registro:", subject_options, index=0, label_visibility="collapsed")
 
 with top_c2b:
-    model_options = ["🧠 TinySleepNet v2 (Champion)", "🌲 LightGBM (Clásico)"] if dl_model_net is not None else ["🌲 LightGBM (Clásico)"]
+    model_options = ["🧠 TinySleepNet v2", "🌲 LightGBM"] if dl_model_net is not None else ["🌲 LightGBM"]
     selected_model_label = st.selectbox("Modelo:", model_options, index=0, label_visibility="collapsed")
 
 use_tinysleepnet = ("TinySleepNet" in selected_model_label) and (dl_model_net is not None)
 
 with top_c3:
-    theme_choice = st.selectbox("Tema:", ["☀️ Modo Claro", "🌙 Modo Oscuro"], index=1, label_visibility="collapsed")
+    theme_choice = st.selectbox("Tema:", ["☀️ Claro", "🌙 Oscuro"], index=1, label_visibility="collapsed")
 
 with top_c4:
     show_upload = st.toggle("Cargar EDF", value=False)
@@ -352,34 +352,45 @@ st.markdown(f"""
         justify-content: flex-end;
         align-items: center;
     }}
-    div[data-testid="stPopover"] > button {{
-        width: 26px !important;
-        height: 26px !important;
-        min-height: 26px !important;
-        min-width: 26px !important;
+    div[data-testid="stPopover"] button,
+    button[data-testid="stPopoverButton"] {{
+        width: 24px !important;
+        height: 24px !important;
+        min-height: 24px !important;
+        min-width: 24px !important;
+        max-width: 24px !important;
+        max-height: 24px !important;
         padding: 0 !important;
+        gap: 0 !important;
         border-radius: 50% !important;
-        background-color: {"rgba(99, 102, 241, 0.16)" if is_dark else "rgba(79, 70, 229, 0.10)"} !important;
+        background-color: {"rgba(99, 102, 241, 0.14)" if is_dark else "rgba(79, 70, 229, 0.09)"} !important;
         color: {"#a5b4fc" if is_dark else "#4f46e5"} !important;
-        border: 1px solid {"rgba(129, 140, 248, 0.45)" if is_dark else "rgba(79, 70, 229, 0.38)"} !important;
+        border: 1px solid {"rgba(129, 140, 248, 0.40)" if is_dark else "rgba(79, 70, 229, 0.35)"} !important;
         box-shadow: none !important;
         transition: all 0.15s ease !important;
     }}
-    div[data-testid="stPopover"] > button:hover {{
+    div[data-testid="stPopover"] button:hover,
+    button[data-testid="stPopoverButton"]:hover {{
         background-color: #6366f1 !important;
         color: #ffffff !important;
         border-color: #6366f1 !important;
-        transform: scale(1.06);
+        transform: scale(1.08);
     }}
-    div[data-testid="stPopover"] > button svg {{
+    div[data-testid="stPopover"] button svg,
+    div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[data-testid="stPopover"] button span[data-testid="stIconMaterial"],
+    button[data-testid="stPopoverButton"] [data-testid="stIconMaterial"],
+    button[data-testid="stPopoverButton"] div[aria-hidden="true"] {{
         display: none !important;
     }}
-    div[data-testid="stPopover"] > button p {{
+    div[data-testid="stPopover"] button p,
+    button[data-testid="stPopoverButton"] p {{
         margin: 0 !important;
+        padding: 0 !important;
         font-family: Georgia, serif !important;
         font-style: italic !important;
         font-weight: 700 !important;
-        font-size: 13px !important;
+        font-size: 12px !important;
         line-height: 1 !important;
     }}
     /* Contraste nítido en botones secundarios y primarios en Modo Claro y Oscuro */
