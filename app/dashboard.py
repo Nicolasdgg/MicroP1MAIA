@@ -191,7 +191,7 @@ def render_info_popover(step_idx: int):
         with st.popover("i", help=f"Información: {step['short']}"):
             st.markdown(f"**{step['title']}**")
             st.markdown(step["purpose"])
-            st.markdown(f"<div style='font-size:12.5px; padding:8px 10px; border-radius:8px; background:rgba(99,102,241,0.12); border-left:3px solid #6366f1; margin-top:6px;'>{step['tip']}</div>", unsafe_allow_html=True)
+            st.info(step["tip"])
     else:
         with st.expander(f"i · {step['short']}", expanded=False):
             st.markdown(step["purpose"])
