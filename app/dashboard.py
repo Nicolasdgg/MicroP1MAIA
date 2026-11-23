@@ -70,8 +70,112 @@ def get_model():
 dl_model_net = get_dl_model()
 model_clf = get_model()
 
+# ----------------- ESTADO Y CONTENIDO DEL RECORRIDO GUIADO -----------------
+TOUR_STEPS = [
+    {
+        "short": "1. Panel de Control y Modelos",
+        "title": "Panel de Control: Sujetos, Comparador de Modelos y Carga EDF",
+        "purpose": (
+            "Permite seleccionar cualquiera de los **18 registros polisomnográficos reales** (9 sujetos de Sleep-EDFx), "
+            "alternar en tiempo real entre el modelo **Champion (`TinySleepNet v2` con normalización z-score)** y el "
+            "**Challenger (`LightGBM` tabular de 25 características)**, o activar **Cargar registro EDF** para inferir "
+            "un estudio externo nuevo."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Selecciona un sujeto inédito del conjunto de prueba (como `SC4011 · E0`, "
+            "`SC4051 · E0` o `ST7021 · J0`) y alterna entre *TinySleepNet v2* y *LightGBM* para contrastar el impacto "
+            "inmediato sobre el hipnograma y la detección de N1."
+        ),
+    },
+    {
+        "short": "2. KPIs de Arquitectura de Sueño",
+        "title": "Resumen Clínico y KPIs de Arquitectura del Sueño",
+        "purpose": (
+            "Automatiza los cinco indicadores estándar que un especialista calcula tras revisar ~900 épocas nocturnas: "
+            "**TIB** (Tiempo en Cama), **TST** (Tiempo Total de Sueño), **Eficiencia de Sueño** (normal ≥ 85%), "
+            "**SOL** (Latencia de inicio de sueño) y **WASO** (Vigilia tras inicio del sueño), además de seleccionar el "
+            "canal EEG (`Fpz-Cz` o `Pz-Oz`) y reportar épocas excluidas por artefactos (`M` y `?`)."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Estos KPIs responden directamente a la pregunta de negocio: reducir el "
+            "tiempo de lectura manual y la variabilidad inter-evaluador como herramienta de apoyo al triaje clínico."
+        ),
+    },
+    {
+        "short": "3. Hipnograma Dual Nocturno",
+        "title": "Hipnograma Dual Nocturno (Predicción vs. Anotación Experta)",
+        "purpose": (
+            "Compara toda la noche en dos franjas sincronizadas codificadas con la paleta estándar **AASM** "
+            "(`W`, `N1`, `N2`, `N3`, `REM`): la franja superior muestra la clasificación automática del modelo activo "
+            "y la inferior la referencia médica experta (*Ground Truth*)."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Pasa el cursor sobre cualquier franja para inspeccionar el número de época "
+            "y verificar la fidelidad macro-estructural de los ciclos de sueño profundo (N3) y sueño REM."
+        ),
+    },
+    {
+        "short": "4. Inspector de Época (30s)",
+        "title": "Inspector Microscópico de Época (30 Segundos)",
+        "purpose": (
+            "Despliega de forma sincronizada la **señal EEG cruda de 30 segundos** (3,000 muestras a 100 Hz) y la "
+            "**distribución de probabilidades calibradas** (`softmax` en TinySleepNet / `predict_proba` en LightGBM) "
+            "para cada uno de los 5 estadios AASM."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Esta vista habilita la **auditabilidad clínica**: el médico puede enfocarse "
+            "en épocas con menor confianza o transiciones ambiguas (como Vigilia → N1 → N2) en vez de revisar toda la noche."
+        ),
+    },
+    {
+        "short": "5. Matriz de Confusión y F1 (N1)",
+        "title": "Matriz de Confusión y F1-Score por Estadio (Foco en N1)",
+        "purpose": (
+            "Cuantifica dinámicamente para el sujeto activo la **matriz de contingencia 5×5** y el **F1-Score "
+            "discriminado por clase** (junto al Macro-F1), transparentando el desempeño en estadios minoritarios."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Observa la fila/barra de **N1** (estadio prioritario del alcance): al pasar "
+            "de *LightGBM* a *TinySleepNet v2 (Normalizado)* se evidencia una mejora sustancial en su detección."
+        ),
+    },
+    {
+        "short": "6. Trazabilidad MLflow",
+        "title": "Corridas Registradas y Gobernanza en MLflow",
+        "purpose": (
+            "Presenta la tabla comparativa oficial evaluada sobre la **partición estricta por sujeto sin fuga de datos** "
+            "(`GroupShuffleSplit`: 12,537 épocas de entrenamiento en 6 sujetos vs. **6,067 épocas de prueba en 3 sujetos inéditos**), "
+            "trazada y versionada en el servidor **MLflow** (`http://52.207.88.72:5000`)."
+        ),
+        "tip": (
+            "💡 **Tip para evaluadores:** Justifica objetivamente la promoción de **TinySleepNet v2 (Normalizado)** "
+            "como `@champion` / `@production` (Acc 77.95%, F1-Macro 0.7317, Kappa 0.6985, **F1-N1 0.4328**) frente a "
+            "`LightGBM v2` (`@challenger`) y `TinySleepNet v1` sin normalizar."
+        ),
+    },
+]
+
+if "tour_active" not in st.session_state:
+    st.session_state["tour_active"] = False
+if "tour_step" not in st.session_state:
+    st.session_state["tour_step"] = 0
+
+
+def render_info_popover(step_idx: int, label: str = "ℹ️"):
+    step = TOUR_STEPS[step_idx]
+    if hasattr(st, "popover"):
+        with st.popover(label, help=f"Ver finalidad de: {step['short']}"):
+            st.markdown(f"**{step['title']}**")
+            st.markdown(step["purpose"])
+            st.info(step["tip"])
+    else:
+        with st.expander(f"{label} {step['short']}", expanded=False):
+            st.markdown(step["purpose"])
+            st.info(step["tip"])
+
+
 # ----------------- BARRA SUPERIOR -----------------
-top_c1, top_c2, top_c2b, top_c3, top_c4 = st.columns([3.0, 1.9, 1.9, 1.2, 1.5])
+top_c1, top_c2, top_c2b, top_c3, top_c4, top_c5 = st.columns([2.7, 1.7, 1.8, 1.1, 1.3, 1.2])
 
 with top_c1:
     st.markdown("""
@@ -110,6 +214,14 @@ with top_c3:
 
 with top_c4:
     show_upload = st.toggle("Cargar registro EDF", value=False)
+
+with top_c5:
+    tour_btn_label = "✖ Cerrar guía" if st.session_state["tour_active"] else "🧭 Recorrido guiado"
+    if st.button(tour_btn_label, use_container_width=True, type="primary" if not st.session_state["tour_active"] else "secondary"):
+        st.session_state["tour_active"] = not st.session_state["tour_active"]
+        if st.session_state["tour_active"]:
+            st.session_state["tour_step"] = 0
+        st.rerun()
 
 # ----------------- VARIABLES DE TEMA (LIGHTING) -----------------
 is_dark = "Oscuro" in theme_choice
@@ -188,8 +300,99 @@ st.markdown(f"""
         align-items: center;
         gap: 8px;
     }}
+    .tour-panel {{
+        background: {"linear-gradient(135deg, #1e1b4b 0%, #1e293b 100%)" if is_dark else "linear-gradient(135deg, #eef2ff 0%, #ffffff 100%)"};
+        border: 2px solid #6366f1;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 8px 0 14px 0;
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.22);
+    }}
+    .tour-section-flag {{
+        background-color: {"#312e81" if is_dark else "#e0e7ff"};
+        color: {"#e0e7ff" if is_dark else "#312e81"};
+        border-left: 4px solid #6366f1;
+        border-radius: 6px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin: 6px 0 8px 0;
+    }}
+    .tour-active-card {{
+        border: 2px solid #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.24) !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
+
+
+def tour_card_cls(step_idx: int) -> str:
+    return "tour-active-card" if (st.session_state["tour_active"] and st.session_state["tour_step"] == step_idx) else ""
+
+
+def render_tour_flag(step_idx: int):
+    if st.session_state["tour_active"] and st.session_state["tour_step"] == step_idx:
+        step = TOUR_STEPS[step_idx]
+        st.markdown(
+            f"<div class='tour-section-flag'>📍 Paso {step_idx + 1} de {len(TOUR_STEPS)} — {step['title']}</div>",
+            unsafe_allow_html=True,
+        )
+
+
+# ----------------- PANEL INTERACTIVO DEL RECORRIDO GUIADO -----------------
+if st.session_state["tour_active"]:
+    cur_idx = st.session_state["tour_step"]
+    cur_step = TOUR_STEPS[cur_idx]
+    st.markdown(f"""
+    <div class="tour-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="background-color:#6366f1; color:white; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">
+                🧭 RECORRIDO PARA EVALUADORES · PASO {cur_idx + 1} DE {len(TOUR_STEPS)}
+            </span>
+            <span style="font-size:11.5px; color:{text_muted};">SomnoScope · Guía interactiva de arquitectura clínica y MLOps</span>
+        </div>
+        <div style="font-size:16px; font-weight:700; color:{text_title}; margin-bottom:6px;">{cur_step['title']}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    st.progress((cur_idx + 1) / len(TOUR_STEPS))
+    st.markdown(cur_step["purpose"])
+    st.info(cur_step["tip"])
+
+    t_nav1, t_nav2, t_nav3, t_nav4 = st.columns([1.2, 2.8, 1.3, 1.0])
+    with t_nav1:
+        if st.button("⬅️ Anterior", disabled=(cur_idx == 0), use_container_width=True, key="tour_prev"):
+            st.session_state["tour_step"] = max(0, cur_idx - 1)
+            st.rerun()
+    with t_nav2:
+        step_labels = [s["short"] for s in TOUR_STEPS]
+        chosen_jump = st.selectbox(
+            "Ir directamente a una sección:",
+            step_labels,
+            index=cur_idx,
+            label_visibility="collapsed",
+            key="tour_jump_select",
+        )
+        new_jump_idx = step_labels.index(chosen_jump)
+        if new_jump_idx != cur_idx:
+            st.session_state["tour_step"] = new_jump_idx
+            st.rerun()
+    with t_nav3:
+        if cur_idx < len(TOUR_STEPS) - 1:
+            if st.button("Siguiente ➡️", type="primary", use_container_width=True, key="tour_next"):
+                st.session_state["tour_step"] = cur_idx + 1
+                st.rerun()
+        else:
+            if st.button("✅ Finalizar", type="primary", use_container_width=True, key="tour_finish"):
+                st.session_state["tour_active"] = False
+                st.session_state["tour_step"] = 0
+                st.rerun()
+    with t_nav4:
+        if st.button("✖ Salir", use_container_width=True, key="tour_exit"):
+            st.session_state["tour_active"] = False
+            st.rerun()
+
+# Bandera del Paso 1 si está activo
+render_tour_flag(0)
 
 # ----------------- SECCIÓN DE CARGA DE ARCHIVO EDF (FUNCIONALIDAD COMPLETA) -----------------
 uploaded_file = None
@@ -202,17 +405,22 @@ if show_upload:
     """, unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Seleccionar archivo .edf:", type=["edf"], key="uploader_edf", label_visibility="collapsed")
 
-# Banner informativo
+# Banner informativo + botón de ayuda de la barra de control
 active_model_banner = (
     "TinySleepNet1D v2 (1D-CNN + BiLSTM con normalización z-score por época — Modelo Champion)"
     if use_tinysleepnet
     else "LightGBM multiclase optimizado (25 características espectrales — Modelo Clásico)"
 )
-st.markdown(f"""
-<div class="badge-banner">
-    <span>🟣</span> <strong>SomnoScope v3.0</strong> — Inferencia en tiempo real con modelo activo: {active_model_banner}.
-</div>
-""", unsafe_allow_html=True)
+ban_c1, ban_c2 = st.columns([9.2, 0.8])
+with ban_c1:
+    st.markdown(f"""
+    <div class="badge-banner {tour_card_cls(0)}">
+        <span>🟣</span> <strong>SomnoScope v3.0</strong> — Inferencia en tiempo real con modelo activo: {active_model_banner}.
+    </div>
+    """, unsafe_allow_html=True)
+with ban_c2:
+    st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    render_info_popover(0, "ℹ️")
 
 # ----------------- PROCESAMIENTO Y CARGA DE DATOS -----------------
 # Fila 1 de Tarjetas Superiores
@@ -415,60 +623,75 @@ with top_card4:
     """, unsafe_allow_html=True)
 
 # ----------------- FILA 2: 5 TARJETAS KPIS EXACTAS A IMAGEN 2 -----------------
+render_tour_flag(1)
+kpi_hdr1, kpi_hdr2 = st.columns([9.2, 0.8])
+with kpi_hdr1:
+    st.markdown(f"<div style='font-size:12px; font-weight:700; color:{text_muted}; text-transform:uppercase; letter-spacing:0.6px; margin:2px 0 6px 2px;'>Indicadores Clínicos de Arquitectura del Sueño</div>", unsafe_allow_html=True)
+with kpi_hdr2:
+    render_info_popover(1, "ℹ️")
+
+kpi_cls = tour_card_cls(1)
 kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
 
 kpi1.markdown(f"""
-<div class="metric-card-kpi">
+<div class="metric-card-kpi {kpi_cls}">
     <div class="metric-top-val">{tib_hours:.1f} h</div>
     <div class="metric-top-lbl" style="margin-top: 4px;">Tiempo en Cama (TIB)</div>
 </div>
 """, unsafe_allow_html=True)
 
 kpi2.markdown(f"""
-<div class="metric-card-kpi">
+<div class="metric-card-kpi {kpi_cls}">
     <div class="metric-top-val">{tst_hours:.1f} h</div>
     <div class="metric-top-lbl" style="margin-top: 4px;">Tiempo de Sueño (TST)</div>
 </div>
 """, unsafe_allow_html=True)
 
 kpi3.markdown(f"""
-<div class="metric-card-kpi">
+<div class="metric-card-kpi {kpi_cls}">
     <div class="metric-top-val">{sleep_eff:.1f} %</div>
     <div class="metric-top-lbl" style="margin-top: 4px;">Eficiencia de Sueño</div>
 </div>
 """, unsafe_allow_html=True)
 
 kpi4.markdown(f"""
-<div class="metric-card-kpi">
+<div class="metric-card-kpi {kpi_cls}">
     <div class="metric-top-val">{sol_min:.0f} min</div>
     <div class="metric-top-lbl" style="margin-top: 4px;">Latencia de Sueño (SOL)</div>
 </div>
 """, unsafe_allow_html=True)
 
 kpi5.markdown(f"""
-<div class="metric-card-kpi">
+<div class="metric-card-kpi {kpi_cls}">
     <div class="metric-top-val">{waso_min:.0f} min</div>
     <div class="metric-top-lbl" style="margin-top: 4px;">Vigilia Intra-Sueño (WASO)</div>
 </div>
 """, unsafe_allow_html=True)
 
 # ----------------- SECCIÓN CENTRAL: HIPNOGRAMA DE LA NOCHE -----------------
-st.markdown(f"""
-<div class="card-box" style="margin-bottom: 12px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <div>
-            <div class="card-header-title">Hipnograma de la noche</div>
-            <div class="card-header-sub" style="margin-bottom: 4px;">Predicción del modelo vs. anotación experta (cuando está disponible)</div>
-        </div>
-        <div style="display: flex; gap: 14px; font-size: 12px; font-weight: 600;">
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['W']};">■</span> W</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N1']};">■</span> N1</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N2']};">■</span> N2</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N3']};">■</span> N3</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['REM']};">■</span> REM</span>
+render_tour_flag(2)
+hip_h1, hip_h2 = st.columns([9.2, 0.8])
+with hip_h1:
+    st.markdown(f"""
+    <div class="card-box {tour_card_cls(2)}" style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div>
+                <div class="card-header-title">Hipnograma de la noche</div>
+                <div class="card-header-sub" style="margin-bottom: 4px;">Predicción del modelo vs. anotación experta (cuando está disponible)</div>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 12px; font-weight: 600;">
+                <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['W']};">■</span> W</span>
+                <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N1']};">■</span> N1</span>
+                <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N2']};">■</span> N2</span>
+                <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['N3']};">■</span> N3</span>
+                <span style="display: flex; align-items: center; gap: 4px;"><span style="color: {STAGE_COLORS['REM']};">■</span> REM</span>
+            </div>
         </div>
     </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+with hip_h2:
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    render_info_popover(2, "ℹ️")
 
 # Heatmap continuo de dos franjas
 custom_colorscale = [
@@ -514,14 +737,20 @@ fig_ribbon.update_layout(
     plot_bgcolor="rgba(0,0,0,0)"
 )
 st.plotly_chart(fig_ribbon, use_container_width=True, config={'displayModeBar': False})
-st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- SECCIÓN: INSPECTOR DE ÉPOCA (ONDA Y PROBABILIDADES) -----------------
-st.markdown(f"""
-<div class="card-box">
-    <div class="card-header-title">🔍 Inspector Detallado de Época (30 Segundos)</div>
-    <div class="card-header-sub">Señal bioeléctrica continua y distribución de certeza predictiva por estadio AASM</div>
-""", unsafe_allow_html=True)
+render_tour_flag(3)
+ins_h1, ins_h2 = st.columns([9.2, 0.8])
+with ins_h1:
+    st.markdown(f"""
+    <div class="card-box {tour_card_cls(3)}">
+        <div class="card-header-title">🔍 Inspector Detallado de Época (30 Segundos)</div>
+        <div class="card-header-sub">Señal bioeléctrica continua y distribución de certeza predictiva por estadio AASM</div>
+    </div>
+    """, unsafe_allow_html=True)
+with ins_h2:
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
+    render_info_popover(3, "ℹ️")
 
 selected_epoch = st.slider("Seleccionar Época de Inspección:", 0, total_epochs - 1, default_epoch_idx, label_visibility="collapsed")
 
@@ -584,9 +813,10 @@ fig_prob.update_layout(
     font=dict(color=text_muted, size=10)
 )
 st.plotly_chart(fig_prob, use_container_width=True, config={'displayModeBar': False})
-st.markdown("</div>", unsafe_allow_html=True)
 
 # ----------------- 3 TARJETAS INFERIORES -----------------
+render_tour_flag(4)
+render_tour_flag(5)
 bot_c1, bot_c2, bot_c3 = st.columns([1.1, 1.1, 1.3])
 
 # Matriz de Confusión para el sujeto actual
@@ -595,8 +825,13 @@ for r, p in zip(y_real, y_pred):
     cm[r, p] += 1
 
 with bot_c1:
+    m_h1, m_h2 = st.columns([8.0, 2.0])
+    with m_h1:
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Desempeño por Sujeto</div>", unsafe_allow_html=True)
+    with m_h2:
+        render_info_popover(4, "ℹ️")
     st.markdown(f"""
-    <div class="card-box" style="min-height: 290px;">
+    <div class="card-box {tour_card_cls(4)}" style="min-height: 290px;">
         <div class="card-header-title">Matriz de confusión</div>
         <div class="card-header-sub">Fila = real, columna = predicho</div>
         <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; text-align: center; margin-top: 6px;">
@@ -668,6 +903,11 @@ macro_f1 = np.mean(list(f1_per_c.values()))
 
 # TARJETA 2: F1-SCORE POR CLASE (HTML ESTRICTO CON SANGRÍA CERO)
 with bot_c2:
+    f1_h1, f1_h2 = st.columns([8.0, 2.0])
+    with f1_h1:
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Métricas por Estadio (Foco N1)</div>", unsafe_allow_html=True)
+    with f1_h2:
+        render_info_popover(4, "ℹ️")
     f1_rows = ""
     for cls in AASM_CLASSES:
         color = STAGE_COLORS[cls]
@@ -683,7 +923,7 @@ with bot_c2:
 <td style="font-family:monospace;font-weight:600;width:35px;text-align:right;color:{text_title};padding:7px 0;">{score:.2f}</td>
 </tr>"""
 
-    card_f1_html = f"""<div class="card-box" style="min-height: 290px;">
+    card_f1_html = f"""<div class="card-box {tour_card_cls(4)}" style="min-height: 290px;">
 <div style="display:flex;justify-content:space-between;align-items:baseline;">
 <div class="card-header-title">F1-score por clase</div>
 <div style="font-size:11px;font-weight:600;color:{text_muted};">Macro F1: {macro_f1:.2f}</div>
@@ -699,6 +939,11 @@ with bot_c2:
 
 # TARJETA 3: CORRIDAS REGISTRADAS (MLFLOW)
 with bot_c3:
+    ml_h1, ml_h2 = st.columns([8.2, 1.8])
+    with ml_h1:
+        st.markdown(f"<div style='font-size:11.5px; font-weight:700; color:{text_muted}; text-transform:uppercase; margin-bottom:4px;'>Gobernanza MLOps</div>", unsafe_allow_html=True)
+    with ml_h2:
+        render_info_popover(5, "ℹ️")
     comp_csv = repo_root / "reports" / "tabla_comparativa_modelos_v1_vs_v2.csv"
     mlflow_rows_html = ""
     if comp_csv.exists():
@@ -744,7 +989,7 @@ with bot_c3:
         """
 
     st.markdown(f"""
-    <div class="card-box" style="min-height: 290px;">
+    <div class="card-box {tour_card_cls(5)}" style="min-height: 290px;">
         <div class="card-header-title">Corridas registradas (MLflow)</div>
         <div class="card-header-sub">Comparación inter-sujeto (6,067 épocas de prueba)</div>
         <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 6px; font-family: monospace;">
