@@ -82,6 +82,13 @@ class TinySleepNet1D(nn.Module):
         logits = self.fc(feat)     # (batch_size, 5)
         return logits
 
+def normalize_epochs(X: np.ndarray) -> np.ndarray:
+    """Z-score por época: (x - media) / desviación estándar de cada época."""
+    mu = X.mean(axis=1, keepdims=True)
+    sd = X.std(axis=1, keepdims=True) + 1e-12  # la señal viene en voltios (~1e-5)
+    return ((X - mu) / sd).astype(np.float32)
+
+
 def train_deep_sleep_net(
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -98,10 +105,11 @@ def train_deep_sleep_net(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[Deep Learning] Entrenando en dispositivo: {device}")
     
-    # Preparar tensores
-    X_train_t = torch.tensor(X_train[:, np.newaxis, :], dtype=torch.float32)
+    # Preparar tensores. La señal MNE viene en voltios (~1e-5): se normaliza cada época con z-score
+    # para que la red pueda aprender (sin esto colapsa hacia una sola clase).
+    X_train_t = torch.tensor(normalize_epochs(X_train)[:, np.newaxis, :], dtype=torch.float32)
     y_train_t = torch.tensor(y_train, dtype=torch.long)
-    X_val_t = torch.tensor(X_val[:, np.newaxis, :], dtype=torch.float32)
+    X_val_t = torch.tensor(normalize_epochs(X_val)[:, np.newaxis, :], dtype=torch.float32)
     y_val_t = torch.tensor(y_val, dtype=torch.long)
     
     train_loader = DataLoader(TensorDataset(X_train_t, y_train_t), batch_size=batch_size, shuffle=True)
