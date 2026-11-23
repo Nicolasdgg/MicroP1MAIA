@@ -18,6 +18,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import mne
 import joblib
+import torch
 
 # Configuración de ruta
 repo_root = Path(__file__).resolve().parent.parent
@@ -26,6 +27,7 @@ if str(repo_root) not in sys.path:
 
 from src.data.loader import AASM_CLASSES, IDX_TO_CLASS, CLASS_TO_IDX, load_and_preprocess_recording, find_psg_hypno_pairs
 from src.features.spectral import extract_epoch_features
+from src.models.deep_learning import TinySleepNet1D, predict_deep_sleep_net
 
 st.set_page_config(
     page_title="SomnoScope | Polisomnografía Clínica",
@@ -43,7 +45,21 @@ STAGE_COLORS = {
     'REM': '#EC4899'   # Rosa / Magenta
 }
 
-# ----------------- CARGA DE MODELO -----------------
+# ----------------- CARGA DE MODELOS -----------------
+@st.cache_resource
+def get_dl_model():
+    dl_path = repo_root / "models" / "model_tinysleepnet.pt"
+    if dl_path.exists():
+        try:
+            net = TinySleepNet1D(in_channels=1, n_classes=5)
+            state = torch.load(dl_path, map_location="cpu", weights_only=True)
+            net.load_state_dict(state)
+            net.eval()
+            return net
+        except Exception:
+            return None
+    return None
+
 @st.cache_resource
 def get_model():
     model_path = repo_root / "models" / "best_sleep_model.pkl"
@@ -51,10 +67,11 @@ def get_model():
         return joblib.load(model_path)
     return None
 
+dl_model_net = get_dl_model()
 model_clf = get_model()
 
 # ----------------- BARRA SUPERIOR -----------------
-top_c1, top_c2, top_c3, top_c4 = st.columns([3.6, 2.3, 1.4, 1.7])
+top_c1, top_c2, top_c2b, top_c3, top_c4 = st.columns([3.0, 1.9, 1.9, 1.2, 1.5])
 
 with top_c1:
     st.markdown("""
@@ -64,7 +81,7 @@ with top_c1:
         </div>
         <div>
             <div style="font-size: 22px; font-weight: 700; color: var(--text-title); line-height: 1.1;">SomnoScope</div>
-            <div style="font-size: 11.5px; color: var(--text-muted);">clasificación de estadios de sueño · EEG Fpz-Cz · LightGBM / Random Forest</div>
+            <div style="font-size: 11.5px; color: var(--text-muted);">clasificación de estadios de sueño · EEG Fpz-Cz · TinySleepNet DL / LightGBM</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -81,6 +98,12 @@ else:
 
 with top_c2:
     selected_subject_label = st.selectbox("Registro:", subject_options, index=0, label_visibility="collapsed")
+
+with top_c2b:
+    model_options = ["🧠 TinySleepNet v2 (Champion)", "🌲 LightGBM (Clásico)"] if dl_model_net is not None else ["🌲 LightGBM (Clásico)"]
+    selected_model_label = st.selectbox("Modelo:", model_options, index=0, label_visibility="collapsed")
+
+use_tinysleepnet = ("TinySleepNet" in selected_model_label) and (dl_model_net is not None)
 
 with top_c3:
     theme_choice = st.selectbox("Tema:", ["☀️ Modo Claro", "🌙 Modo Oscuro"], index=1, label_visibility="collapsed")
@@ -180,9 +203,14 @@ if show_upload:
     uploaded_file = st.file_uploader("Seleccionar archivo .edf:", type=["edf"], key="uploader_edf", label_visibility="collapsed")
 
 # Banner informativo
-st.markdown("""
+active_model_banner = (
+    "TinySleepNet1D v2 (1D-CNN + BiLSTM con normalización z-score por época — Modelo Champion)"
+    if use_tinysleepnet
+    else "LightGBM multiclase optimizado (25 características espectrales — Modelo Clásico)"
+)
+st.markdown(f"""
 <div class="badge-banner">
-    <span>🟣</span> <strong>SomnoScope v2.0</strong> — Inferencia en tiempo real con modelo empaquetado (LightGBM multiclase optimizado).
+    <span>🟣</span> <strong>SomnoScope v3.0</strong> — Inferencia en tiempo real con modelo activo: {active_model_banner}.
 </div>
 """, unsafe_allow_html=True)
 
@@ -215,68 +243,78 @@ def check_api_health(url: str):
 api_is_online = check_api_health(API_BASE_URL)
 
 @st.cache_data
-def process_uploaded_edf(file_bytes: bytes, file_name: str, target_channel: str):
-    """Procesa un archivo EDF subido por el usuario en tiempo real vía API REST (con fallback local)."""
+def process_uploaded_edf(file_bytes: bytes, file_name: str, target_channel: str, use_dl: bool = True):
+    """Procesa un archivo EDF subido por el usuario en tiempo real (TinySleepNet1D Champion o LightGBM)."""
     with tempfile.NamedTemporaryFile(delete=False, suffix=".edf") as tmp:
         tmp.write(file_bytes)
         tmp_path = tmp.name
-        
-    raw = mne.io.read_raw_edf(tmp_path, preload=True, verbose=False)
-    available_ch = raw.ch_names
-    ch_sel = target_channel if target_channel in available_ch else available_ch[0]
-    raw.pick([ch_sel])
-    if raw.info['sfreq'] != 100.0:
-        raw.resample(100.0, verbose=False)
-    raw.filter(0.5, 35.0, fir_design='firwin', verbose=False)
-    
-    n_samples = len(raw.times)
-    epoch_len = 3000
-    n_epochs = n_samples // epoch_len
-    data = raw.get_data()[0, :n_epochs * epoch_len]
-    X_epochs = data.reshape(n_epochs, epoch_len).astype(np.float32)
-    
-    # 1. Intentar inferencia a través de la API REST
-    if api_is_online:
-        try:
+
+    try:
+        raw = mne.io.read_raw_edf(tmp_path, preload=True, verbose=False)
+        available_ch = raw.ch_names
+        ch_sel = target_channel if target_channel in available_ch else available_ch[0]
+        raw.pick([ch_sel])
+        if raw.info['sfreq'] != 100.0:
+            raw.resample(100.0, verbose=False)
+        raw.filter(0.5, 35.0, fir_design='firwin', verbose=False)
+
+        n_samples = len(raw.times)
+        epoch_len = 3000
+        n_epochs = n_samples // epoch_len
+        data = raw.get_data()[0, :n_epochs * epoch_len]
+        X_epochs = data.reshape(n_epochs, epoch_len).astype(np.float32)
+
+        if use_dl and dl_model_net is not None:
+            y_pred, y_probs = predict_deep_sleep_net(dl_model_net, X_epochs)
+            return X_epochs, y_pred.copy(), y_pred, y_probs
+
+        # Modelo clásico: intentar API REST o fallback local
+        if api_is_online and not use_dl:
+            try:
+                feats = np.array([extract_epoch_features(x) for x in X_epochs])
+                y_pred = []
+                y_probs = []
+                for f in feats:
+                    res = requests.post(
+                        f"{API_BASE_URL}/predict/features",
+                        json={"features": f.tolist()},
+                        timeout=5
+                    )
+                    if res.status_code == 200:
+                        d = res.json()
+                        y_pred.append(d["stage_idx"])
+                        y_probs.append([d["probabilities"][c] for c in AASM_CLASSES])
+                if len(y_pred) == n_epochs:
+                    return X_epochs, np.array(y_pred), np.array(y_pred), np.array(y_probs)
+            except Exception:
+                pass
+
+        if model_clf is not None:
             feats = np.array([extract_epoch_features(x) for x in X_epochs])
-            # Predicción por lotes en la API
-            y_pred = []
-            y_probs = []
-            for f in feats:
-                res = requests.post(
-                    f"{API_BASE_URL}/predict/features",
-                    json={"features": f.tolist()},
-                    timeout=5
-                )
-                if res.status_code == 200:
-                    d = res.json()
-                    y_pred.append(d["stage_idx"])
-                    y_probs.append([d["probabilities"][c] for c in AASM_CLASSES])
-            if len(y_pred) == n_epochs:
-                return X_epochs, np.array(y_pred), np.array(y_pred), np.array(y_probs)
-        except Exception:
-            pass
-            
-    # 2. Fallback al modelo serializado en disco
-    if model_clf is not None:
-        feats = np.array([extract_epoch_features(x) for x in X_epochs])
-        y_pred = model_clf.predict(feats)
-        y_probs = model_clf.predict_proba(feats)
-    else:
-        y_pred = np.zeros(n_epochs, dtype=int)
-        y_probs = np.zeros((n_epochs, 5))
-        
-    y_real = y_pred.copy()
-    return X_epochs, y_real, y_pred, y_probs
+            y_pred = model_clf.predict(feats)
+            y_probs = model_clf.predict_proba(feats)
+        else:
+            y_pred = np.zeros(n_epochs, dtype=int)
+            y_probs = np.zeros((n_epochs, 5))
+
+        return X_epochs, y_pred.copy(), y_pred, y_probs
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
 
 @st.cache_data
-def load_subject_data(subject_key: str, channel: str):
+def load_subject_data(subject_key: str, channel: str, use_dl: bool = True):
     """Carga de datos reactiva y determinista por sujeto seleccionado."""
     if subject_key in subject_map:
         psg, hypno, subj = subject_map[subject_key]
         try:
             X, y = load_and_preprocess_recording(psg, hypno, target_channel=channel)
-            if model_clf is not None:
+            if use_dl and dl_model_net is not None:
+                y_pred, y_probs = predict_deep_sleep_net(dl_model_net, X)
+            elif model_clf is not None:
                 feats = np.array([extract_epoch_features(epoch) for epoch in X])
                 y_pred = model_clf.predict(feats)
                 y_probs = model_clf.predict_proba(feats)
@@ -318,10 +356,10 @@ def load_subject_data(subject_key: str, channel: str):
 # Decidir si procesar archivo subido o sujeto seleccionado
 if uploaded_file is not None:
     file_bytes = uploaded_file.getvalue()
-    X_epochs, y_real, y_pred, y_probs = process_uploaded_edf(file_bytes, uploaded_file.name, selected_channel)
-    st.success(f"✅ Archivo cargado con éxito: **{uploaded_file.name}** | {len(y_pred):,} épocas clasificadas en tiempo real.")
+    X_epochs, y_real, y_pred, y_probs = process_uploaded_edf(file_bytes, uploaded_file.name, selected_channel, use_dl=use_tinysleepnet)
+    st.success(f"✅ Archivo cargado con éxito: **{uploaded_file.name}** | {len(y_pred):,} épocas clasificadas en tiempo real ({selected_model_label}).")
 else:
-    X_epochs, y_real, y_pred, y_probs = load_subject_data(selected_subject_label, selected_channel)
+    X_epochs, y_real, y_pred, y_probs = load_subject_data(selected_subject_label, selected_channel, use_dl=use_tinysleepnet)
 
 total_epochs = len(y_pred)
 
@@ -661,46 +699,66 @@ with bot_c2:
 
 # TARJETA 3: CORRIDAS REGISTRADAS (MLFLOW)
 with bot_c3:
+    comp_csv = repo_root / "reports" / "tabla_comparativa_modelos_v1_vs_v2.csv"
+    mlflow_rows_html = ""
+    if comp_csv.exists():
+        try:
+            df_runs = pd.read_csv(comp_csv)
+            best_idx = int(df_runs["f1_macro"].idxmax()) if "f1_macro" in df_runs.columns and len(df_runs) > 0 else -1
+            for r_i, row in df_runs.iterrows():
+                is_best = (r_i == best_idx)
+                m_name = str(row.get("Modelo", "")).replace(" (1D-CNN+BiLSTM)", "")
+                v_name = str(row.get("Versión", ""))
+                acc_v = float(row.get("accuracy", 0.0))
+                f1m_v = float(row.get("f1_macro", 0.0))
+                f1n1_v = float(row.get("f1_N1", 0.0))
+                if is_best:
+                    tr_style = f"background-color: {'#064e3b' if is_dark else '#ecfdf5'}; border-bottom: 1px solid {border_color};"
+                    name_html = f"<td style='padding: 6px 4px; font-weight: 700; color: #10B981;'>{m_name} <span style='background-color: #10B981; color: white; font-size: 8.5px; padding: 1px 4px; border-radius: 4px; margin-left: 2px;'>CHAMPION</span></td>"
+                    f1_color = "#10B981"
+                else:
+                    tr_style = f"border-bottom: 1px solid {'#334155' if is_dark else '#f8fafc'};"
+                    name_html = f"<td style='padding: 6px 4px; color: {text_title};'>{m_name}</td>"
+                    f1_color = text_title
+                mlflow_rows_html += (
+                    f"<tr style='{tr_style}'>"
+                    f"{name_html}"
+                    f"<td style='padding: 6px 4px; color: {text_muted};'>{v_name}</td>"
+                    f"<td style='padding: 6px 4px; text-align: right; color: {text_title};'>{acc_v*100:.1f}%</td>"
+                    f"<td style='padding: 6px 4px; text-align: right; font-weight: 700; color: {f1_color};'>{f1m_v:.3f}</td>"
+                    f"<td style='padding: 6px 4px; text-align: right; color: {f1_color};'>{f1n1_v:.3f}</td>"
+                    f"</tr>"
+                )
+        except Exception:
+            mlflow_rows_html = ""
+
+    if not mlflow_rows_html:
+        mlflow_rows_html = f"""
+        <tr style="background-color: {'#064e3b' if is_dark else '#ecfdf5'}; border-bottom: 1px solid {border_color};">
+            <td style="padding: 6px 4px; font-weight: 700; color: #10B981;">TinySleepNet <span style="background-color: #10B981; color: white; font-size: 8.5px; padding: 1px 4px; border-radius: 4px;">CHAMPION</span></td>
+            <td style="padding: 6px 4px; color: {text_title};">v2 (Normalizado)</td>
+            <td style="padding: 6px 4px; text-align: right; color: {text_title};">78.7%</td>
+            <td style="padding: 6px 4px; text-align: right; font-weight: 700; color: #10B981;">0.738</td>
+            <td style="padding: 6px 4px; text-align: right; color: #10B981;">0.456</td>
+        </tr>
+        """
+
     st.markdown(f"""
     <div class="card-box" style="min-height: 290px;">
         <div class="card-header-title">Corridas registradas (MLflow)</div>
-        <div class="card-header-sub">Comparación de experimentos de modelos</div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; font-family: monospace;">
+        <div class="card-header-sub">Comparación inter-sujeto (6,067 épocas de prueba)</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 6px; font-family: monospace;">
             <thead>
                 <tr style="color: {text_muted}; text-align: left; border-bottom: 1px solid {border_color};">
-                    <th style="padding: 6px 4px;">CORRIDA</th>
-                    <th style="padding: 6px 4px;">MODELO</th>
-                    <th style="padding: 6px 4px; text-align: right;">ACC.</th>
-                    <th style="padding: 6px 4px; text-align: right;">F1-MACRO</th>
+                    <th style="padding: 5px 4px;">MODELO</th>
+                    <th style="padding: 5px 4px;">VERSIÓN</th>
+                    <th style="padding: 5px 4px; text-align: right;">ACC.</th>
+                    <th style="padding: 5px 4px; text-align: right;">F1-MAC</th>
+                    <th style="padding: 5px 4px; text-align: right;">F1-N1</th>
                 </tr>
             </thead>
             <tbody>
-                <tr style="border-bottom: 1px solid {"#334155" if is_dark else "#f8fafc"};">
-                    <td style="padding: 7px 4px; color: {text_title};">rf_baseline_v1</td>
-                    <td style="padding: 7px 4px; color: {text_muted};">RF, 8 feat.</td>
-                    <td style="padding: 7px 4px; text-align: right; color: {text_title};">0.81</td>
-                    <td style="padding: 7px 4px; text-align: right; font-weight: 700; color: {text_title};">0.74</td>
-                </tr>
-                <tr style="background-color: {"#064e3b" if is_dark else "#ecfdf5"}; border-bottom: 1px solid {border_color};">
-                    <td style="padding: 7px 4px; font-weight: 700; color: #10B981;">
-                        rf_v2_tuned <span style="background-color: #10B981; color: white; font-size: 9px; padding: 2px 4px; border-radius: 4px; margin-left: 2px;">MEJOR</span>
-                    </td>
-                    <td style="padding: 7px 4px; color: {text_title};">RF, 8 feat.</td>
-                    <td style="padding: 7px 4px; text-align: right; color: {text_title};">0.86</td>
-                    <td style="padding: 7px 4px; text-align: right; font-weight: 700; color: #10B981;">0.79</td>
-                </tr>
-                <tr style="border-bottom: 1px solid {"#334155" if is_dark else "#f8fafc"};">
-                    <td style="padding: 7px 4px; color: {text_title};">lgb_spectral_v1</td>
-                    <td style="padding: 7px 4px; color: {text_muted};">LGBM, 25 feat.</td>
-                    <td style="padding: 7px 4px; text-align: right; color: {text_title};">0.84</td>
-                    <td style="padding: 7px 4px; text-align: right; font-weight: 700; color: {text_title};">0.76</td>
-                </tr>
-                <tr>
-                    <td style="padding: 7px 4px; color: {text_title};">rf_v1_5class</td>
-                    <td style="padding: 7px 4px; color: {text_muted};">RF, 5 feat.</td>
-                    <td style="padding: 7px 4px; text-align: right; color: {text_title};">0.77</td>
-                    <td style="padding: 7px 4px; text-align: right; font-weight: 700; color: {text_title};">0.68</td>
-                </tr>
+                {mlflow_rows_html}
             </tbody>
         </table>
     </div>
@@ -709,6 +767,6 @@ with bot_c3:
 # ----------------- FOOTER -----------------
 st.markdown(f"""
 <div style="text-align: center; font-size: 11px; color: {text_muted}; margin-top: 20px; padding-top: 12px; border-top: 1px solid {border_color};">
-    SomnoScope · v2.0 — línea base hacia la plataforma flexible multicanal del proyecto de grado | MAIA - Universidad de los Andes
+    SomnoScope · v3.0 — TinySleepNet1D Normalizado (Champion) + LightGBM | MAIA - Universidad de los Andes
 </div>
 """, unsafe_allow_html=True)

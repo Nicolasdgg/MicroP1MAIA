@@ -23,10 +23,12 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código fuente, modelos y aplicaciones
+# Copiar código fuente, modelos, reportes y aplicaciones
 COPY src/ /app/src/
 COPY models/ /app/models/
 COPY app/ /app/app/
+COPY reports/ /app/reports/
+COPY scripts/ /app/scripts/
 COPY data/raw/sleep-cassette/SC4001* /app/data/raw/sleep-cassette/
 COPY data/raw/sleep-cassette/SC4002* /app/data/raw/sleep-cassette/
 COPY data/raw/sleep-telemetry/ST7011* /app/data/raw/sleep-telemetry/

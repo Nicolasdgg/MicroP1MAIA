@@ -1,0 +1,104 @@
+{
+  "train_subjects": [
+    "SC400",
+    "SC402",
+    "SC403",
+    "SC404",
+    "ST701",
+    "ST704"
+  ],
+  "val_subjects": [
+    "SC401",
+    "SC405",
+    "ST702"
+  ],
+  "train_epochs": 12537,
+  "val_epochs": 6067,
+  "best_epoch_tsn_v2": 10,
+  "metrics": [
+    {
+      "Modelo": "Random Forest",
+      "Versión": "v1 (Baseline)",
+      "Iteración": "Full 18 registros",
+      "accuracy": 0.768419317619911,
+      "f1_macro": 0.6689565389981261,
+      "f1_weighted": 0.7598122027150672,
+      "cohen_kappa": 0.6696254435849613,
+      "f1_W": 0.7292289300657502,
+      "f1_N1": 0.2841225626740947,
+      "f1_N2": 0.8686233403214535,
+      "f1_N3": 0.7596899224806202,
+      "f1_REM": 0.7031179394487121
+    },
+    {
+      "Modelo": "Random Forest",
+      "Versión": "v2 (Tuned)",
+      "Iteración": "Full 18 registros",
+      "accuracy": 0.7705620570298335,
+      "f1_macro": 0.6640613633348724,
+      "f1_weighted": 0.757445253862193,
+      "cohen_kappa": 0.6692523963177839,
+      "f1_W": 0.7483946293053123,
+      "f1_N1": 0.2564885496183206,
+      "f1_N2": 0.867053998632946,
+      "f1_N3": 0.7447173043974872,
+      "f1_REM": 0.7036523347202959
+    },
+    {
+      "Modelo": "LightGBM",
+      "Versión": "v1 (Baseline)",
+      "Iteración": "Full 18 registros",
+      "accuracy": 0.7794626668864348,
+      "f1_macro": 0.694199796453854,
+      "f1_weighted": 0.7776508592330309,
+      "cohen_kappa": 0.6879259321139719,
+      "f1_W": 0.7585791691751956,
+      "f1_N1": 0.3215507411630559,
+      "f1_N2": 0.8729203539823008,
+      "f1_N3": 0.8,
+      "f1_REM": 0.717948717948718
+    },
+    {
+      "Modelo": "LightGBM",
+      "Versión": "v2 (Tuned)",
+      "Iteración": "Full 18 registros",
+      "accuracy": 0.7791330146695237,
+      "f1_macro": 0.6942188742245392,
+      "f1_weighted": 0.7775459051788035,
+      "cohen_kappa": 0.688597717960875,
+      "f1_W": 0.7478991596638656,
+      "f1_N1": 0.3283582089552239,
+      "f1_N2": 0.8738835298320828,
+      "f1_N3": 0.8038482095136291,
+      "f1_REM": 0.7171052631578947
+    },
+    {
+      "Modelo": "TinySleepNet (1D-CNN+BiLSTM)",
+      "Versión": "v1 (Sin normalizar)",
+      "Iteración": "Baseline",
+      "accuracy": 0.14636558430855448,
+      "f1_macro": 0.05107117181883537,
+      "f1_weighted": 0.037375309522932096,
+      "cohen_kappa": 0.0,
+      "f1_W": 0.25535585909417685,
+      "f1_N1": 0.0,
+      "f1_N2": 0.0,
+      "f1_N3": 0.0,
+      "f1_REM": 0.0
+    },
+    {
+      "Modelo": "TinySleepNet (1D-CNN+BiLSTM)",
+      "Versión": "v2 (Normalizado, ep 10)",
+      "Iteración": "Entrega Final (Champion)",
+      "accuracy": 0.7794626668864348,
+      "f1_macro": 0.7317193557073527,
+      "f1_weighted": 0.7860327656907323,
+      "cohen_kappa": 0.6985224280795339,
+      "f1_W": 0.8590203106332138,
+      "f1_N1": 0.43283582089552236,
+      "f1_N2": 0.836852207293666,
+      "f1_N3": 0.7666034155597723,
+      "f1_REM": 0.7632850241545893
+    }
+  ]
+}
