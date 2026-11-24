@@ -142,16 +142,16 @@ TOUR_STEPS = [
     },
     {
         "short": "6. Trazabilidad MLflow",
-        "title": "Corridas Registradas y Gobernanza en MLflow",
+        "title": "Corridas Registradas y Gobernanza en MLflow (3-Fold GroupKFold)",
         "purpose": (
-            "Presenta la tabla comparativa oficial evaluada sobre la **partición estricta por sujeto sin fuga de datos** "
-            "(`GroupShuffleSplit`: 12,537 épocas de entrenamiento en 6 sujetos vs. **6,067 épocas de prueba en 3 sujetos inéditos**), "
-            "trazada y versionada en el servidor **MLflow** (`http://52.207.88.72:5000`)."
+            "Presenta los promedios oficiales de **Validación Cruzada 3-Fold GroupKFold por sujeto** "
+            "(23 sujetos de Sleep-EDF-20 + Telemetry = **48,378 épocas evaluadas sin fuga de datos**), "
+            "trazados con corridas anidadas por fold en **MLflow** (`http://52.207.88.72:5000`)."
         ),
         "tip": (
-            "💡 **Tip para evaluadores:** Justifica objetivamente la promoción de **TinySleepNet v2 (Normalizado)** "
-            "como `@champion` / `@production` (Acc 77.95%, F1-Macro 0.7317, Kappa 0.6985, **F1-N1 0.4328**) frente a "
-            "`LightGBM v2` (`@challenger`) y `TinySleepNet v1` sin normalizar."
+            "💡 **Tip para evaluadores:** Justifica estadísticamente la promoción de **TinySleepNet Normalizado** "
+            "como `@champion` / `@production` (Acc 76.27±5.21%, F1-Macro 0.7164±0.0507, **F1-N1 0.3779±0.0518** — "
+            "ganador en 3/3 folds) por encima de `LightGBM` (`@challenger`) y `Random Forest`."
         ),
     },
 ]
@@ -1104,7 +1104,7 @@ with bot_c3:
     st.markdown(f"""
     <div class="card-box {tour_card_cls(5)}" style="min-height: 290px;">
         <div class="card-header-title">Corridas registradas (MLflow)</div>
-        <div class="card-header-sub">Comparación inter-sujeto (6,067 épocas de prueba)</div>
+        <div class="card-header-sub">Validación Cruzada 3-Fold GroupKFold (23 sujetos · 48,378 épocas)</div>
         <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 6px; font-family: monospace;">
             <thead>
                 <tr style="color: {text_muted}; text-align: left; border-bottom: 1px solid {border_color};">

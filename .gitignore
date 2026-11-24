@@ -67,3 +67,7 @@ Propuesta Proyecto de Grado/
 
 # Caché de pytest
 .pytest_cache/
+
+# Respaldos locales de experimentos intermedios (pesos promovidos viven en models/)
+models/local_sleepedf20/
+reports/local_sleepedf20/
