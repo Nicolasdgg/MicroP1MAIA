@@ -28,7 +28,7 @@ def main():
     print("=" * 70)
     
     data_dir = repo_root / "data" / "raw"
-    models_dir = repo_root / "models"
+    models_dir = repo_root / "Modelos"
     figures_dir = repo_root / "reports" / "figures"
     models_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)

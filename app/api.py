@@ -41,8 +41,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Configuración parametrizable mediante variables de entorno (ver .env.example)
+MODELS_DIR = Path(os.getenv("MODELS_DIR", str(repo_root / "Modelos")))
+DL_MODEL_FILE = os.getenv("DL_MODEL_FILE", "model_tinysleepnet.pt")
+CLASSICAL_MODEL_FILE = os.getenv("CLASSICAL_MODEL_FILE", "best_sleep_model.pkl")
+
 # 1. Carga en memoria del modelo Champion (Deep Learning: TinySleepNet1D normalizado)
-DL_MODEL_PATH = repo_root / "models" / "model_tinysleepnet.pt"
+DL_MODEL_PATH = MODELS_DIR / DL_MODEL_FILE
 dl_model: Optional[TinySleepNet1D] = None
 if DL_MODEL_PATH.exists():
     try:
@@ -56,7 +61,7 @@ if DL_MODEL_PATH.exists():
         print(f"[WARN] No se pudo cargar TinySleepNet1D: {e}")
 
 # 2. Carga en memoria del modelo clásico tabular (LightGBM - 25 características espectrales)
-MODEL_PATH = repo_root / "models" / "best_sleep_model.pkl"
+MODEL_PATH = MODELS_DIR / CLASSICAL_MODEL_FILE
 model = None
 if MODEL_PATH.exists():
     try:

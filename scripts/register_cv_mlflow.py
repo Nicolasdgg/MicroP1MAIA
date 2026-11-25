@@ -46,7 +46,7 @@ def main():
     client = MlflowClient(tracking_uri)
     print(f"[OK] Conectado a MLflow: {tracking_uri} | Experimento: {EXPERIMENT_NAME}")
 
-    models_dir = repo_root / "models"
+    models_dir = repo_root / "Modelos"
     figures_dir = repo_root / "reports" / "figures"
 
     rf_model = joblib.load(models_dir / "model_random_forest.pkl")

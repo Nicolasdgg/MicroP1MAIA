@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código fuente, modelos, reportes y aplicaciones
 COPY src/ /app/src/
-COPY models/ /app/models/
+COPY Modelos/ /app/Modelos/
 COPY app/ /app/app/
 COPY reports/ /app/reports/
 COPY scripts/ /app/scripts/

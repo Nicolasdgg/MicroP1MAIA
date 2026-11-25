@@ -59,7 +59,7 @@ def main():
 
     records = summary["metrics"]
     figures_dir = repo_root / "reports" / "figures"
-    models_dir = repo_root / "models"
+    models_dir = repo_root / "Modelos"
 
     tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", REMOTE_TRACKING_URI)
     mlflow.set_tracking_uri(tracking_uri)

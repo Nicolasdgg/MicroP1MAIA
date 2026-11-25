@@ -68,6 +68,10 @@ Propuesta Proyecto de Grado/
 # Caché de pytest
 .pytest_cache/
 
-# Respaldos locales de experimentos intermedios (pesos promovidos viven en models/)
-models/local_sleepedf20/
+# Documentos Word y PDF locales (se conservan en disco local, excluidos del repo GitHub)
+*.docx
+*.pdf
+
+# Respaldos locales de experimentos intermedios (pesos promovidos viven en Modelos/)
+Modelos/local_sleepedf20/
 reports/local_sleepedf20/

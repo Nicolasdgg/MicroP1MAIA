@@ -6,10 +6,15 @@ services:
       dockerfile: Dockerfile
     container_name: somnoscope-api
     command: uvicorn app.api:app --host 0.0.0.0 --port 8000
+    environment:
+      - MODELS_DIR=${MODELS_DIR:-/app/Modelos}
+      - DL_MODEL_FILE=${DL_MODEL_FILE:-model_tinysleepnet.pt}
+      - CLASSICAL_MODEL_FILE=${CLASSICAL_MODEL_FILE:-best_sleep_model.pkl}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://mlflow:5000}
     volumes:
       - ./data/raw:/app/data/raw:ro
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -25,11 +30,15 @@ services:
     container_name: somnoscope-dashboard
     command: streamlit run app/dashboard.py --server.port 8050 --server.address 0.0.0.0 --server.headless true
     environment:
-      - API_URL=http://api:8000
+      - API_URL=${API_URL:-http://api:8000}
+      - MODELS_DIR=${MODELS_DIR:-/app/Modelos}
+      - DL_MODEL_FILE=${DL_MODEL_FILE:-model_tinysleepnet.pt}
+      - CLASSICAL_MODEL_FILE=${CLASSICAL_MODEL_FILE:-best_sleep_model.pkl}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://mlflow:5000}
     volumes:
       - ./data/raw:/app/data/raw:ro
     ports:
-      - "8050:8050"
+      - "${DASHBOARD_PORT:-8050}:8050"
     depends_on:
       - api
     restart: unless-stopped

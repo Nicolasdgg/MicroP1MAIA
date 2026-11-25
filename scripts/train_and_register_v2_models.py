@@ -82,7 +82,7 @@ def main():
     # 2. Cargar datos
     feat_cache_path = repo_root / "data" / "processed" / "cache_features_v2.npz"
     cache_path = repo_root / "data" / "processed" / "cache_dataset.npz"
-    models_dir = repo_root / "models"
+    models_dir = repo_root / "Modelos"
     figures_dir = repo_root / "reports" / "figures"
     models_dir.mkdir(parents=True, exist_ok=True)
     figures_dir.mkdir(parents=True, exist_ok=True)

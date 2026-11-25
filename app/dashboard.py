@@ -9,6 +9,7 @@ Homologado al 100% con la maqueta prototipo original y las observaciones del usu
 6. Inspector de época debajo del hipnograma con Gráfico de Amplitud (µV) y Gráfico de Probabilidad con colores idénticos.
 """
 
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -46,10 +47,14 @@ STAGE_COLORS = {
     'REM': '#EC4899'   # Rosa / Magenta
 }
 
-# ----------------- CARGA DE MODELOS -----------------
+# ----------------- CARGA DE MODELOS (PARAMETRIZABLE VÍA ENV) -----------------
+MODELS_DIR = Path(os.getenv("MODELS_DIR", str(repo_root / "Modelos")))
+DL_MODEL_FILE = os.getenv("DL_MODEL_FILE", "model_tinysleepnet.pt")
+CLASSICAL_MODEL_FILE = os.getenv("CLASSICAL_MODEL_FILE", "best_sleep_model.pkl")
+
 @st.cache_resource
 def get_dl_model():
-    dl_path = repo_root / "models" / "model_tinysleepnet.pt"
+    dl_path = MODELS_DIR / DL_MODEL_FILE
     if dl_path.exists():
         try:
             net = TinySleepNet1D(in_channels=1, n_classes=5)
@@ -63,7 +68,7 @@ def get_dl_model():
 
 @st.cache_resource
 def get_model():
-    model_path = repo_root / "models" / "best_sleep_model.pkl"
+    model_path = MODELS_DIR / CLASSICAL_MODEL_FILE
     if model_path.exists():
         return joblib.load(model_path)
     return None

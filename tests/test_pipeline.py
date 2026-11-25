@@ -44,7 +44,7 @@ def test_compute_sleep_metrics():
 
 def test_trained_model_inference():
     """Verifica que el modelo guardado genere predicciones coherentes en las 5 clases AASM."""
-    model_path = Path("models/best_sleep_model.pkl")
+    model_path = Path("Modelos/best_sleep_model.pkl")
     if model_path.exists():
         model = joblib.load(model_path)
         dummy_feats = np.random.randn(5, 25).astype(np.float32)

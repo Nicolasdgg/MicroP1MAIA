@@ -259,7 +259,7 @@ def train_deep_sleep_net(
                 mlflow.pytorch.log_model(model, artifact_path="model_tinysleepnet", input_example=dummy_input.numpy())
             except Exception as e:
                 print(f"[Aviso MLflow] No se pudo serializar en formato pt2 ({e}), guardando state_dict.")
-                torch.save(model.state_dict(), figures_dir.parent / "models" / "model_tinysleepnet.pt")
+                torch.save(model.state_dict(), figures_dir.parent / "Modelos" / "model_tinysleepnet.pt")
 
         return model, best_metrics
 
