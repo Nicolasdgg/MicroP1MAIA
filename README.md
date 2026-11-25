@@ -176,6 +176,10 @@ pytest tests -v
    - Alternar en vivo entre el modelo **Champion (`TinySleepNet v2`)** y el **Challenger (`LightGBM`)**.
    - Pulsar **"Cargar registro EDF"** para subir cualquier archivo polisomnográfico `.edf` nuevo y generar automáticamente el hipnograma nocturno, los KPIs (`TIB`, `TST`, Eficiencia %, `SOL`, `WASO`), el inspector de onda EEG por época y la distribución de probabilidades AASM.
 
+#### Demostración interactiva de SomnoScope
+
+![Demostración interactiva de SomnoScope](docs/demo_somnoscope.gif)
+
 ### Ejemplos de uso de la API REST (`:8000`)
 
 **1. Verificar estado de la API y modelos cargados (`GET /health`):**
