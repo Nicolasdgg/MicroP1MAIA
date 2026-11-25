@@ -1,13 +1,13 @@
 # SomnoScope — Clasificación Automática de Estadios del Sueño sobre EEG Monocanal
 
 **Proyecto:** SomnoScope (Maestría en Inteligencia Artificial — MAIA, Universidad de los Andes)  
-**Integrantes:** Arturo Molina · Catalina García · Daniel Franco · Nicolás Gómez
+**Integrantes:** Arturo Molina · Catalina García · Daniel Franco · Nicolás Gómez · Luis Celedón
 
 ---
 
 ## 1. Descripción del proyecto
 
-**SomnoScope** es una plataforma integral de Machine Learning y **MLOps** para la estadificación automática de estudios de polisomnografía (PSG) sobre un único canal de electroencefalografía (**EEG `Fpz-Cz`** a 100 Hz), clasificando cada época de 30 segundos en los cinco estadios clínicos definidos por la Academia Americana de Medicina del Sueño (**AASM**): **Vigilia (`W`), `N1`, `N2`, `N3` y `REM`**.
+**SomnoScope** es una plataforma integral de Machine Learning y **MLOps** para la estadificación automática de estudios de polisomnografía (PSG) sobre un único canal de electroencefalografía, clasificando cada época de 30 segundos en los cinco estadios clínicos definidos por la Academia Americana de Medicina del Sueño (**AASM**): **Vigilia (`W`), `N1`, `N2`, `N3` y `REM`**.
 
 El sistema combina dos paradigmas complementarios evaluados bajo **Validación Cruzada estricta por sujeto (`3-Fold GroupKFold`, 0% fuga de datos)** sobre **23 sujetos únicos de Sleep-EDF Expanded (45 noches, 48,378 épocas)**:
 
@@ -107,7 +107,7 @@ La aplicación permite ajustar rutas de modelos, puertos y URLs de servicios med
 | `API_URL` | `http://api:8000` (Docker) / `http://localhost:8000` | URL base de la API consumida por el cliente/dashboard. |
 | `MLFLOW_TRACKING_URI` | `http://mlflow:5000` (Docker) / `http://localhost:5000` | URI del servidor de seguimiento y Model Registry MLflow. |
 
-### Credenciales de ejemplo (si aplica)
+### Credenciales de acceso AWS
 - **Acceso a la aplicación (Dashboard, API y MLflow):** **No requiere usuario ni contraseña** para facilitar la evaluación directa de tutores y usuarios clínicos en la demo.
 - **Sincronización opcional de datos crudos vía DVC / Amazon S3:** Solo si se desea ejecutar `dvc pull` para descargar grabaciones `.edf` privadas, copiar `.env.example` a `.env` y sustituir los valores ficticios:
   ```env
@@ -168,13 +168,13 @@ pytest tests -v
 
 ## 7. Instrucciones básicas y ejemplos de uso
 
-### Uso desde el Dashboard Clínico (`:8050`)
+### Uso desde el Dashboard (`:8050`)
 1. Ingresa a `http://52.207.88.72:8050` (o `http://localhost:8050`).
 2. Opcionalmente, pulsa **"Iniciar recorrido guiado"** en la barra superior para recorrer los 6 módulos del tablero.
 3. En el panel superior puedes:
    - Seleccionar un estudio real precargado (`Sleep Cassette` o `Sleep Telemetry`).
    - Alternar en vivo entre el modelo **Champion (`TinySleepNet v2`)** y el **Challenger (`LightGBM`)**.
-   - Pulsar **"Cargar registro EDF"** para subir cualquier archivo polisomnográfico `.edf` nuevo y generar automáticamente el hipnograma nocturno, los KPIs clínicos (`TIB`, `TST`, Eficiencia %, `SOL`, `WASO`), el inspector de onda EEG por época y la distribución de probabilidades AASM.
+   - Pulsar **"Cargar registro EDF"** para subir cualquier archivo polisomnográfico `.edf` nuevo y generar automáticamente el hipnograma nocturno, los KPIs (`TIB`, `TST`, Eficiencia %, `SOL`, `WASO`), el inspector de onda EEG por época y la distribución de probabilidades AASM.
 
 ### Ejemplos de uso de la API REST (`:8000`)
 
@@ -221,8 +221,3 @@ curl -X POST http://localhost:8000/predict/recording \
 ```
 
 ---
-
-## 8. Acceso y evaluación
-
-- El repositorio es de acceso público (en caso de configurarse como privado, asegurar permisos de lectura a los tutores: `andresmint007`, `cerozob`, `davidlandinez10`, `estmar95` y `fcastellanosp`).
-- Todas las pruebas automatizadas de inferencia, extracción de características y API pueden validarse con `pytest tests -v`.
