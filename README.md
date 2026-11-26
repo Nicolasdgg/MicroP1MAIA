@@ -180,48 +180,5 @@ pytest tests -v
 
 ![Demostración interactiva de SomnoScope](docs/demo_somnoscope.gif)
 
-### Ejemplos de uso de la API REST (`:8000`)
-
-**1. Verificar estado de la API y modelos cargados (`GET /health`):**
-```bash
-curl -s http://localhost:8000/health
-```
-*Respuesta esperada:*
-```json
-{
-  "status": "healthy",
-  "champion_model": "TinySleepNet1D (PyTorch)",
-  "classical_model": "LightGBM (25 features)",
-  "dl_model_loaded": true,
-  "classical_model_loaded": true
-}
-```
-
-**2. Clasificar una época a partir de 25 características espectrales (`POST /predict/features`):**
-```bash
-curl -X POST http://localhost:8000/predict/features \
-  -H "Content-Type: application/json" \
-  -d '{"features": [0.15, 0.22, 0.18, 0.09, 0.06, 0.30, 0.25, 0.20, 0.15, 0.10, 1.5, 0.8, 0.7, 0.9, 1.2, 0.02, 0.45, 1.10, 0.01, 0.05, 0.0, 0.1, 3.0, 0.002, 0.08]}'
-```
-
-**3. Clasificar una señal cruda de 30 s (`3,000` muestras a 100 Hz) con TinySleepNet Champion (`POST /predict/epoch`):**
-```python
-import numpy as np, requests
-
-signal_30s = np.random.normal(0, 1e-5, size=3000).tolist()
-resp = requests.post(
-    "http://localhost:8000/predict/epoch",
-    json={"signal": signal_30s, "sfreq": 100.0, "model_type": "tinysleepnet"},
-)
-print(resp.json())
-# {'stage': 'N2', 'stage_id': 2, 'confidence': 0.84, 'probabilities': {...}, 'model_used': 'TinySleepNet1D (Champion)'}
-```
-
-**4. Clasificar un archivo `.edf` completo (`POST /predict/recording`):**
-```bash
-curl -X POST http://localhost:8000/predict/recording \
-  -F "file=@SC4001E0-PSG.edf" \
-  -F "model_type=tinysleepnet"
-```
 
 ---
